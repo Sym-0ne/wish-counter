@@ -1,16 +1,14 @@
 import { useState, useCallback } from 'react';
 import { usePersistedReducer } from './hooks/usePersistedReducer';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
-import { useLuckScore, useStreak } from './hooks/useDerivedStats';
+import { useLuckScore, useStreak, useNameSuggestions } from './hooks/useDerivedStats';
 import * as A from './store/actions';
-import { BANNER_CONFIG } from './utils/banners';
 
 import { Header } from './components/Header';
 import { BannerInfo } from './components/BannerInfo';
 import { PityCard } from './components/PityCard';
 import { AddWishControls, AddWishModal } from './components/AddWishModal';
 import { WishHistory } from './components/WishHistory';
-import { PrimoCounter } from './components/PrimoCounter';
 import { ProbabilityCalc } from './components/ProbabilityCalc';
 import { Wishlist } from './components/Wishlist';
 import { StatsPanel } from './components/StatsPanel';
@@ -19,19 +17,18 @@ import { Settings } from './components/Settings';
 
 export default function App() {
   const [state, dispatch] = usePersistedReducer();
-  const [view, setView] = useState('banner'); // 'banner' | 'stats' | 'collection'
+  const [view, setView] = useState('banner');
   const [wishModalOpen, setWishModalOpen] = useState(false);
+  const [addRank, setAddRank] = useState(5); // rang pré-rempli à l'ouverture du modal
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const activeKey = state.activeBanner;
   const activeBanner = state.banners[activeKey];
-  const cfg = BANNER_CONFIG[activeKey];
 
-  // Indicateurs dérivés (recalculés à chaque mutation via useMemo dans les hooks).
   const luckScore = useLuckScore(state.banners);
   const streak = useStreak(state.banners);
+  const nameSuggestions = useNameSuggestions(state.banners);
 
-  // --- Action helpers ---
   const handleAddWish = useCallback(
     (wish) => dispatch(A.addWish(activeKey, wish)),
     [dispatch, activeKey],
@@ -40,19 +37,25 @@ export default function App() {
     () => dispatch(A.addThreeStar(activeKey)),
     [dispatch, activeKey],
   );
+  const handleAddFiveThreeStars = useCallback(
+    () => dispatch(A.addThreeStarsBulk(activeKey, 5)),
+    [dispatch, activeKey],
+  );
   const handleUndo = useCallback(
     () => dispatch(A.undoLastWish(activeKey)),
     [dispatch, activeKey],
   );
+
+  const openAddModal = useCallback((rank) => {
+    setAddRank(rank);
+    setWishModalOpen(true);
+  }, []);
 
   // Raccourcis : Espace = +1 trois-étoile, Ctrl+Z = undo (vue bannière uniquement).
   useKeyboardShortcuts({
     onSpace: view === 'banner' ? handleAddThreeStar : null,
     onUndo: view === 'banner' ? handleUndo : null,
   });
-
-  // Détermine le type de fate à utiliser pour les calculs (standard = acquaint).
-  const fateType = activeKey === 'standard' ? 'acquaint' : 'intertwined';
 
   return (
     <div className="app">
@@ -81,8 +84,9 @@ export default function App() {
               streak={streak}
             />
             <AddWishControls
-              onOpenModal={() => setWishModalOpen(true)}
+              onOpenModal={openAddModal}
               onAddThreeStar={handleAddThreeStar}
+              onAddFiveThreeStars={handleAddFiveThreeStars}
               onUndo={handleUndo}
               canUndo={activeBanner.history.length > 0}
             />
@@ -94,19 +98,7 @@ export default function App() {
           </div>
 
           <div className="app__col">
-            <PrimoCounter
-              resources={state.resources}
-              income={state.income}
-              banner={activeBanner}
-              fateType={fateType}
-              onChange={(resources) => dispatch(A.updateResources(resources))}
-            />
-            <ProbabilityCalc
-              banner={activeBanner}
-              bannerKey={activeKey}
-              resources={state.resources}
-              income={state.income}
-            />
+            <ProbabilityCalc banner={activeBanner} bannerKey={activeKey} />
             <Wishlist
               bannerKey={activeKey}
               banner={activeBanner}
@@ -134,6 +126,8 @@ export default function App() {
         onSubmit={handleAddWish}
         bannerKey={activeKey}
         banner={activeBanner}
+        initialRank={addRank}
+        nameSuggestions={nameSuggestions}
       />
 
       <Settings

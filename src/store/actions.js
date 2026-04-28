@@ -1,6 +1,7 @@
 // Types d'actions et action creators.
 
 export const ActionTypes = {
+  ADD_THREE_STARS_BULK: 'ADD_THREE_STARS_BULK',
   ADD_WISH: 'ADD_WISH',
   ADD_THREE_STAR: 'ADD_THREE_STAR',
   UNDO_LAST_WISH: 'UNDO_LAST_WISH',
@@ -78,4 +79,9 @@ export const importState = (state, mode = 'replace') => ({
 
 export const resetAll = () => ({
   type: ActionTypes.RESET_ALL,
+});
+
+export const addThreeStarsBulk = (banner, count) => ({
+  type: ActionTypes.ADD_THREE_STARS_BULK,
+  payload: { banner, count },
 });

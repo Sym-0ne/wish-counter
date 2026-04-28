@@ -69,6 +69,32 @@ export function reducer(state, action) {
         },
       });
     }
+    case ActionTypes.ADD_THREE_STARS_BULK: {
+      const { banner: bannerKey, count } = action.payload;
+      const banner = state.banners[bannerKey];
+      if (!banner || count <= 0) return state;
+      // Append N wishes 3★ d'un coup puis rebuild une seule fois (perf).
+      const newHistory = [...banner.history];
+      const baseTs = Date.now();
+      for (let i = 0; i < count; i++) {
+        newHistory.push({
+          id: newId(),
+          timestamp: baseTs + i,
+          version: state.version,
+          bannerKey,
+          rank: 3,
+          name: '',
+          itemType: 'weapon',
+          featured: false,
+          pityAt: null,
+        });
+      }
+      const newBanner = rebuildBanner({ ...banner, history: newHistory }, bannerKey);
+      return {
+        ...state,
+        banners: { ...state.banners, [bannerKey]: newBanner },
+      };
+    }
 
     case ActionTypes.UNDO_LAST_WISH: {
       const { banner: bannerKey } = action.payload;

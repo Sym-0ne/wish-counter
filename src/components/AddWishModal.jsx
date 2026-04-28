@@ -1,17 +1,29 @@
 import { useEffect, useRef, useState } from 'react';
-import { Plus, Undo2, X } from 'lucide-react';
+import { Plus, Undo2, X, Sparkles, Star } from 'lucide-react';
 import { BANNER_CONFIG } from '../utils/banners';
 
-export function AddWishControls({ onOpenModal, onAddThreeStar, onUndo, canUndo }) {
+export function AddWishControls({
+  onOpenModal,
+  onAddThreeStar,
+  onAddFiveThreeStars,
+  onUndo,
+  canUndo,
+}) {
   return (
     <div className="card">
       <div className="card__title">Ajouter un tirage</div>
       <div className="add-wish">
-        <button className="btn btn--primary" onClick={onOpenModal}>
-          <Plus size={16} /> Ajouter (4★ / 5★)
+        <button className="btn btn--primary" onClick={() => onOpenModal(5)}>
+          <Sparkles size={16} /> Ajouter 5★
+        </button>
+        <button className="btn" onClick={() => onOpenModal(4)}>
+          <Star size={16} /> Ajouter 4★
         </button>
         <button className="btn" onClick={onAddThreeStar}>
           +1 trois-étoile
+        </button>
+        <button className="btn" onClick={onAddFiveThreeStars}>
+          +5 trois-étoiles
         </button>
         <button className="btn btn--ghost btn--danger" onClick={onUndo} disabled={!canUndo}>
           <Undo2 size={14} /> Annuler dernier
@@ -24,9 +36,17 @@ export function AddWishControls({ onOpenModal, onAddThreeStar, onUndo, canUndo }
   );
 }
 
-export function AddWishModal({ open, onClose, onSubmit, bannerKey, banner }) {
+export function AddWishModal({
+  open,
+  onClose,
+  onSubmit,
+  bannerKey,
+  banner,
+  initialRank = 5,
+  nameSuggestions = { character: [], weapon: [] },
+}) {
   const cfg = BANNER_CONFIG[bannerKey];
-  const [rank, setRank] = useState(5);
+  const [rank, setRank] = useState(initialRank);
   const [name, setName] = useState('');
   const [itemType, setItemType] = useState(bannerKey === 'weapon' ? 'weapon' : 'character');
   const [featured, setFeatured] = useState(true);
@@ -35,21 +55,24 @@ export function AddWishModal({ open, onClose, onSubmit, bannerKey, banner }) {
 
   useEffect(() => {
     if (open) {
-      setRank(5);
+      setRank(initialRank);
       setName('');
       setItemType(bannerKey === 'weapon' ? 'weapon' : 'character');
       setFeatured(true);
       setTimeout(() => nameRef.current?.focus(), 50);
     }
-  }, [open, bannerKey]);
+  }, [open, bannerKey, initialRank]);
 
   if (!open) return null;
 
   const showFeaturedToggle =
     rank >= 4 && (cfg.has5050 || cfg.hasFatePoints) && itemType !== '';
 
-  // Pity preview : à quelle pity ce tirage va atterrir ?
   const previewPity = rank === 5 ? banner.pity5 + 1 : rank === 4 ? banner.pity4 + 1 : null;
+
+  // Suggestions filtrées par type sélectionné
+  const currentSuggestions =
+    (itemType === 'weapon' ? nameSuggestions.weapon : nameSuggestions.character) || [];
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -106,9 +129,25 @@ export function AddWishModal({ open, onClose, onSubmit, bannerKey, banner }) {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder={rank === 5 ? 'Néfer, Mistsplitter…' : 'Bennett, Sacrificial Sword…'}
+                placeholder={
+                  rank === 5 ? 'Néfer, Mistsplitter…' : 'Bennett, Sacrificial Sword…'
+                }
+                list="wish-name-suggestions"
+                autoComplete="off"
                 required
               />
+              <datalist id="wish-name-suggestions">
+                {currentSuggestions.map((n) => (
+                  <option key={n} value={n} />
+                ))}
+              </datalist>
+              {currentSuggestions.length > 0 && (
+                <div className="text-xs muted" style={{ marginTop: 4 }}>
+                  {currentSuggestions.length}{' '}
+                  {itemType === 'weapon' ? 'arme(s)' : 'personnage(s)'} déjà enregistré(es)
+                  — tape pour filtrer ou choisis dans la liste
+                </div>
+              )}
             </div>
 
             <div className="modal__field">
@@ -130,8 +169,8 @@ export function AddWishModal({ open, onClose, onSubmit, bannerKey, banner }) {
                   />
                   <label htmlFor="featured" style={{ marginBottom: 0, cursor: 'pointer' }}>
                     {bannerKey === 'weapon'
-                      ? 'C\'est l\'arme ciblée (Epitomized Path)'
-                      : 'C\'est le personnage / l\'arme featured (50/50 gagné)'}
+                      ? "C'est l'arme ciblée (Epitomized Path)"
+                      : "C'est le personnage / l'arme featured (50/50 gagné)"}
                   </label>
                 </div>
                 {!featured && rank === 5 && cfg.has5050 && (
@@ -159,7 +198,8 @@ export function AddWishModal({ open, onClose, onSubmit, bannerKey, banner }) {
               color: 'var(--muted)',
             }}
           >
-            Sera enregistré à la pity {rank}★ : <strong style={{ color: 'var(--accent)' }}>{previewPity}</strong>
+            Sera enregistré à la pity {rank}★ :{' '}
+            <strong style={{ color: 'var(--accent)' }}>{previewPity}</strong>
           </div>
         )}
 
