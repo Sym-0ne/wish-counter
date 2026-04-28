@@ -6,5 +6,5 @@ import react from '@vitejs/plugin-react';
 //          alors base: '/my-tracker/'
 export default defineConfig({
   plugins: [react()],
-  base: 'https://github.com/Sym-0ne/wish-counter',
+  base: 'wish-counter',
 });
