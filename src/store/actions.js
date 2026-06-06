@@ -8,8 +8,9 @@ export const ActionTypes = {
   SET_ACTIVE_BANNER: 'SET_ACTIVE_BANNER',
   UPDATE_BANNER_METADATA: 'UPDATE_BANNER_METADATA',
   UPDATE_WISHLIST: 'UPDATE_WISHLIST',
-  UPDATE_RESOURCES: 'UPDATE_RESOURCES',
-  UPDATE_INCOME: 'UPDATE_INCOME',
+  IMPORT_SYNCED_WISHES: 'IMPORT_SYNCED_WISHES',
+  UPDATE_SYNC_CONFIG: 'UPDATE_SYNC_CONFIG',
+  UPDATE_MANUAL_COLLECTION: 'UPDATE_MANUAL_COLLECTION',
   SET_VERSION: 'SET_VERSION',
   SET_VERSION_FILTER: 'SET_VERSION_FILTER',
   RESET_BANNER: 'RESET_BANNER',
@@ -47,14 +48,19 @@ export const updateWishlist = (banner, wishlist) => ({
   payload: { banner, wishlist },
 });
 
-export const updateResources = (resources) => ({
-  type: ActionTypes.UPDATE_RESOURCES,
-  payload: { resources },
+export const updateManualCollection = (itemType, name, count, rank) => ({
+  type: ActionTypes.UPDATE_MANUAL_COLLECTION,
+  payload: { itemType, name, count, rank },
 });
 
-export const updateIncome = (income) => ({
-  type: ActionTypes.UPDATE_INCOME,
-  payload: { income },
+export const importSyncedWishes = (wishGroups) => ({
+  type: ActionTypes.IMPORT_SYNCED_WISHES,
+  payload: { wishGroups },
+});
+
+export const updateSyncConfig = (syncConfig) => ({
+  type: ActionTypes.UPDATE_SYNC_CONFIG,
+  payload: { syncConfig },
 });
 
 export const setVersion = (version) => ({

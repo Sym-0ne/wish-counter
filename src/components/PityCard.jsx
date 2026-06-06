@@ -1,11 +1,16 @@
-import { Shield, Flame, TrendingUp, TrendingDown, Sparkles, Target } from 'lucide-react';
+import { Shield, Flame, TrendingUp, TrendingDown, Sparkles, Target, AlertTriangle, Zap } from 'lucide-react';
 import { BANNER_CONFIG, HARD_PITY_4 } from '../utils/banners';
+
+const CRITICAL_PITY5_THRESHOLD = 80; // Pity critique commune à toutes bannières
+const PITY4_WARN_THRESHOLD = 8;      // 4★ bientôt garanti
 
 export function PityCard({ banner, bannerKey, luckScore, streak }) {
   const cfg = BANNER_CONFIG[bannerKey];
   const pity5 = banner.pity5;
   const pity4 = banner.pity4;
   const inSoftPity = pity5 + 1 >= cfg.softPity5;
+  const inCritical = pity5 >= CRITICAL_PITY5_THRESHOLD;
+  const four_imminent = pity4 >= PITY4_WARN_THRESHOLD;
   const fillPct5 = Math.min(100, (pity5 / cfg.hardPity5) * 100);
   const fillPct4 = Math.min(100, (pity4 / HARD_PITY_4) * 100);
 
@@ -52,7 +57,7 @@ export function PityCard({ banner, bannerKey, luckScore, streak }) {
         {/* Badges */}
         <div className="pity-card__badges">
           {cfg.has5050 && (
-            <span className={`badge ${banner.isGuaranteed ? 'badge--guaranteed' : 'badge--gold'}`}>
+            <span className={`badge ${banner.isGuaranteed ? 'badge--guaranteed badge--pulse' : 'badge--gold'}`}>
               {banner.isGuaranteed ? <Shield size={12} /> : <Sparkles size={12} />}
               {banner.isGuaranteed ? 'Garanti featured' : '50/50'}
             </span>
@@ -60,7 +65,7 @@ export function PityCard({ banner, bannerKey, luckScore, streak }) {
 
           {cfg.hasFatePoints && (
             <span
-              className={`badge ${banner.fatePoints >= 2 ? 'badge--guaranteed' : 'badge--gold'}`}
+              className={`badge ${banner.fatePoints >= 2 ? 'badge--guaranteed badge--pulse' : 'badge--gold'}`}
             >
               <Target size={12} />
               Fate Points : {banner.fatePoints} / 2
@@ -68,10 +73,24 @@ export function PityCard({ banner, bannerKey, luckScore, streak }) {
             </span>
           )}
 
-          {inSoftPity && (
+          {inCritical && (
+            <span className="badge badge--critical badge--pulse">
+              <AlertTriangle size={12} />
+              Pity critique — {cfg.hardPity5 - pity5} restant{cfg.hardPity5 - pity5 > 1 ? 's' : ''}
+            </span>
+          )}
+
+          {inSoftPity && !inCritical && (
             <span className="badge badge--soft">
               <Flame size={12} />
               Soft pity active
+            </span>
+          )}
+
+          {four_imminent && (
+            <span className="badge badge--4star">
+              <Zap size={12} />
+              4★ imminent — {HARD_PITY_4 - pity4} restant{HARD_PITY_4 - pity4 > 1 ? 's' : ''}
             </span>
           )}
 

@@ -1,4 +1,79 @@
+import { useState, useEffect, useRef } from 'react';
 import { BANNER_CONFIG } from '../utils/banners';
+import {
+  getCharacterList,
+  getWeaponList,
+  findSlug,
+  characterIconUrl,
+  weaponIconUrl,
+} from '../utils/genshinApi';
+
+/**
+ * Charge et cache le portrait associé à un nom de personnage/arme.
+ * Retourne l'URL de l'image ou null si non trouvé.
+ */
+function usePortrait(name, isWeapon) {
+  const [iconUrl, setIconUrl] = useState(null);
+  const lastFetched = useRef('');
+
+  useEffect(() => {
+    if (!name || name === lastFetched.current) return;
+    lastFetched.current = name;
+    setIconUrl(null);
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const list = isWeapon ? await getWeaponList() : await getCharacterList();
+        const slug = findSlug(list, name);
+        if (!slug || cancelled) return;
+        const url = isWeapon ? weaponIconUrl(slug) : characterIconUrl(slug);
+        if (!cancelled) setIconUrl(url);
+      } catch {
+        // Silencieux — le portrait est décoratif
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [name, isWeapon]);
+
+  return iconUrl;
+}
+
+function FeaturedField({ label, value, placeholder, isWeapon, onChange }) {
+  const portrait = usePortrait(value, isWeapon);
+  const [imgError, setImgError] = useState(false);
+
+  // Reset l'erreur si l'URL change
+  useEffect(() => setImgError(false), [portrait]);
+
+  return (
+    <div className="banner-info__field banner-info__field--featured">
+      {portrait && !imgError && (
+        <img
+          src={portrait}
+          alt={value}
+          className="banner-info__portrait"
+          onError={() => setImgError(true)}
+        />
+      )}
+      {(!portrait || imgError) && (
+        <div className="banner-info__portrait banner-info__portrait--placeholder">
+          <span>?</span>
+        </div>
+      )}
+      <div style={{ flex: 1 }}>
+        <label>{label}</label>
+        <input
+          type="text"
+          value={value}
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      </div>
+    </div>
+  );
+}
 
 export function BannerInfo({ bannerKey, banner, onChange }) {
   const cfg = BANNER_CONFIG[bannerKey];
@@ -6,43 +81,40 @@ export function BannerInfo({ bannerKey, banner, onChange }) {
 
   const update = (patch) => onChange(patch);
 
+  // Nom principal featured (personnage ou arme 1)
+  const featuredName = bannerKey === 'weapon'
+    ? (m.featuredWeapons?.[0] || '')
+    : m.featured || '';
+
   return (
     <div className="card">
       <div className="card__title">{cfg.longLabel}</div>
 
       <div className="banner-info__grid">
         {bannerKey !== 'standard' && (
-          <div className="banner-info__field">
-            <label>{bannerKey === 'weapon' ? 'Arme 1 featured' : 'Featured 5★'}</label>
-            <input
-              type="text"
-              value={bannerKey === 'weapon' ? (m.featuredWeapons?.[0] || '') : m.featured}
-              placeholder={bannerKey === 'weapon' ? 'Mistsplitter…' : 'Néfer…'}
-              onChange={(e) =>
-                bannerKey === 'weapon'
-                  ? update({
-                      featuredWeapons: [e.target.value, m.featuredWeapons?.[1] || ''],
-                    })
-                  : update({ featured: e.target.value })
-              }
-            />
-          </div>
+          <FeaturedField
+            label={bannerKey === 'weapon' ? 'Arme 1 featured' : 'Featured 5★'}
+            value={featuredName}
+            placeholder={bannerKey === 'weapon' ? 'Mistsplitter…' : 'Néfer…'}
+            isWeapon={bannerKey === 'weapon'}
+            onChange={(v) =>
+              bannerKey === 'weapon'
+                ? update({ featuredWeapons: [v, m.featuredWeapons?.[1] || ''] })
+                : update({ featured: v })
+            }
+          />
         )}
 
         {bannerKey === 'weapon' && (
-          <div className="banner-info__field">
-            <label>Arme 2 featured</label>
-            <input
-              type="text"
-              value={m.featuredWeapons?.[1] || ''}
-              placeholder="Skyward Atlas…"
-              onChange={(e) =>
-                update({
-                  featuredWeapons: [m.featuredWeapons?.[0] || '', e.target.value],
-                })
-              }
-            />
-          </div>
+          <FeaturedField
+            label="Arme 2 featured"
+            value={m.featuredWeapons?.[1] || ''}
+            placeholder="Skyward Atlas…"
+            isWeapon={true}
+            onChange={(v) =>
+              update({ featuredWeapons: [m.featuredWeapons?.[0] || '', v] })
+            }
+          />
         )}
 
         <div className="banner-info__field">

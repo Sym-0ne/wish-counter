@@ -30,19 +30,15 @@ export const initialState = {
     standard: createBannerState('standard'),
     chronicled: createBannerState('chronicled'),
   },
-  resources: {
-    primos: 0,
-    intertwinedFates: 0,
-    acquaintFates: 0,
+  manualCollection: {
+    // { 'Name': { count: N, rank: R } } — count est additif (peut être négatif pour corriger)
+    characters: {},
+    weapons: {},
   },
-  income: {
-    commissions: true,
-    welkin: false,
-    bp: false,
-    abyss: false,
-    theater: false,
-    events: 30, // estimation event/day
-    custom: 0,
+  sync: {
+    workerUrl: '',    // URL du Cloudflare Worker proxy
+    authkeyUrl: '',   // URL complète avec authkey (expire ~24h)
+    lastSync: null,   // ISO string de la dernière sync réussie
   },
   versionFilter: null, // null = toutes versions, sinon string ex: "6.5"
 };

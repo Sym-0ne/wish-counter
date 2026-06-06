@@ -13,6 +13,7 @@
   --soft-pity: #ff9944;
   --guaranteed: #44bb66;
   --danger: #d9534f;
+  --success: #4caf50;
   --shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
@@ -251,6 +252,30 @@ h4 {
   border-color: var(--gold);
 }
 
+.banner-info__field--featured {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  grid-column: 1 / -1;
+}
+.banner-info__portrait {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+  background: var(--surface-2);
+}
+.banner-info__portrait--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
 /* ========== PITY CARD ========== */
 .pity-card {
   display: flex;
@@ -342,6 +367,24 @@ h4 {
   background: rgba(217, 83, 79, 0.1);
   border-color: var(--danger);
   color: var(--danger);
+}
+.badge--critical {
+  background: rgba(217, 83, 79, 0.2);
+  border-color: var(--danger);
+  color: var(--danger);
+  font-weight: 700;
+}
+.badge--4star {
+  background: rgba(153, 102, 204, 0.15);
+  border-color: var(--purple);
+  color: var(--purple);
+}
+@keyframes pulse-border {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 currentColor; }
+  50% { opacity: 0.85; box-shadow: 0 0 0 3px transparent; }
+}
+.badge--pulse {
+  animation: pulse-border 1.8s ease-in-out infinite;
 }
 
 /* ========== LUCK SCORE ========== */
@@ -528,7 +571,7 @@ h4 {
 }
 .history__item {
   display: grid;
-  grid-template-columns: 60px 1fr 80px 90px 60px;
+  grid-template-columns: 60px 1fr 80px 80px 90px 60px;
   gap: 0.75rem;
   padding: 0.55rem 0.75rem;
   align-items: center;
@@ -571,6 +614,17 @@ h4 {
 .history__pity--soft {
   color: var(--soft-pity);
   font-weight: 600;
+}
+.history__cost {
+  color: var(--gold);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  opacity: 0.85;
+}
+.history__item--rank-4 .history__cost,
+.history__item--rank-3 .history__cost {
+  display: none;
 }
 .history__date {
   color: var(--muted);
@@ -616,6 +670,9 @@ h4 {
 @media (max-width: 600px) {
   .history__item {
     grid-template-columns: 50px 1fr 60px 80px;
+  }
+  .history__cost {
+    display: none;
   }
   .history__version {
     display: none;
@@ -910,6 +967,111 @@ h4 {
   height: 1px;
   background: var(--border);
   margin: 0.75rem 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+
+/* ========== PROFILE BAR ========== */
+.profile-bar {
+  position: relative;
+}
+.profile-bar__trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 140px;
+}
+.profile-bar__name {
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+.profile-bar__dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  min-width: 220px;
+  z-index: 200;
+  padding: 6px 0;
+}
+.profile-bar__label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 12px 6px;
+}
+.profile-bar__item {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px 4px 12px;
+  gap: 6px;
+}
+.profile-bar__item--active {
+  background: rgba(192, 160, 96, 0.08);
+}
+.profile-bar__item-name {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+}
+.profile-bar__item-name:hover { color: var(--gold); }
+.profile-bar__item-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.profile-bar__item:hover .profile-bar__item-actions { opacity: 1; }
+.profile-bar__rename {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex: 1;
+}
+.profile-bar__divider {
+  height: 1px;
+  background: var(--border);
+  margin: 6px 0;
+}
+.profile-bar__add {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 12px;
+  text-align: left;
+}
+.profile-bar__add:hover { color: var(--gold); }
+.profile-bar__new {
+  display: flex;
+  gap: 4px;
+  padding: 6px 8px;
+  align-items: center;
 }
 
 /* ========== SCROLLBAR ========== */

@@ -15,8 +15,8 @@ import { StatsPanel } from './components/StatsPanel';
 import { ConstellationTracker } from './components/ConstellationTracker';
 import { Settings } from './components/Settings';
 
-export default function App() {
-  const [state, dispatch] = usePersistedReducer();
+export default function App({ profileId = 'default', profileProps = {} }) {
+  const [state, dispatch] = usePersistedReducer(profileId);
   const [view, setView] = useState('banner');
   const [wishModalOpen, setWishModalOpen] = useState(false);
   const [addRank, setAddRank] = useState(5); // rang pré-rempli à l'ouverture du modal
@@ -65,6 +65,7 @@ export default function App() {
         onBannerChange={(b) => dispatch(A.setActiveBanner(b))}
         onViewChange={setView}
         onOpenSettings={() => setSettingsOpen(true)}
+        profileProps={profileProps}
       />
 
       {view === 'banner' && (
@@ -116,7 +117,13 @@ export default function App() {
 
       {view === 'collection' && (
         <main className="app__main app__main--full">
-          <ConstellationTracker banners={state.banners} />
+          <ConstellationTracker
+            banners={state.banners}
+            manualCollection={state.manualCollection}
+            onUpdateManual={(itemType, name, count, rank) =>
+              dispatch(A.updateManualCollection(itemType, name, count, rank))
+            }
+          />
         </main>
       )}
 
@@ -134,8 +141,9 @@ export default function App() {
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
         state={state}
-        onUpdateIncome={(income) => dispatch(A.updateIncome(income))}
         onSetVersion={(v) => dispatch(A.setVersion(v))}
+        onImportSynced={(groups) => dispatch(A.importSyncedWishes(groups))}
+        onUpdateSyncConfig={(cfg) => dispatch(A.updateSyncConfig(cfg))}
         onImport={(s, mode) => dispatch(A.importState(s, mode))}
         onResetBanner={(b) => dispatch(A.resetBanner(b))}
         onResetAll={() => dispatch(A.resetAll())}

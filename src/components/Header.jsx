@@ -1,7 +1,8 @@
 import { Sparkles, BarChart3, Layers, Settings as SettingsIcon } from 'lucide-react';
 import { BANNER_CONFIG, BANNER_KEYS } from '../utils/banners';
+import { ProfileBar } from './ProfileBar';
 
-export function Header({ activeBanner, view, onBannerChange, onViewChange, onOpenSettings }) {
+export function Header({ activeBanner, view, onBannerChange, onViewChange, onOpenSettings, profileProps }) {
   return (
     <header className="header">
       <div className="header__inner">
@@ -44,6 +45,16 @@ export function Header({ activeBanner, view, onBannerChange, onViewChange, onOpe
           </button>
         </div>
 
+        {profileProps?.profiles && (
+          <ProfileBar
+            profiles={profileProps.profiles}
+            activeProfileId={profileProps.activeProfileId}
+            onSwitch={profileProps.onSwitch}
+            onCreate={profileProps.onCreate}
+            onRename={profileProps.onRename}
+            onDelete={profileProps.onDelete}
+          />
+        )}
         <button className="btn btn--ghost btn--small" onClick={onOpenSettings} title="Réglages">
           <SettingsIcon size={16} />
         </button>

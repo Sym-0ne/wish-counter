@@ -142,18 +142,44 @@ export function reducer(state, action) {
       };
     }
 
-    case ActionTypes.UPDATE_RESOURCES: {
+    case ActionTypes.UPDATE_MANUAL_COLLECTION: {
+      const { itemType, name, count, rank } = action.payload;
+      const section = itemType === 'weapon' ? 'weapons' : 'characters';
+      const current = state.manualCollection?.[section] || {};
+      let updated;
+      if (count === 0) {
+        // Supprimer l'entrée si count revient à 0
+        const { [name]: _, ...rest } = current;
+        updated = rest;
+      } else {
+        updated = { ...current, [name]: { count, rank } };
+      }
       return {
         ...state,
-        resources: { ...state.resources, ...action.payload.resources },
+        manualCollection: {
+          ...state.manualCollection,
+          [section]: updated,
+        },
       };
     }
 
-    case ActionTypes.UPDATE_INCOME: {
-      return {
-        ...state,
-        income: { ...state.income, ...action.payload.income },
-      };
+    case ActionTypes.IMPORT_SYNCED_WISHES: {
+      const { wishGroups } = action.payload;
+      const banners = { ...state.banners };
+      for (const [key, newWishes] of Object.entries(wishGroups)) {
+        if (!newWishes || !newWishes.length) continue;
+        const existing = banners[key]?.history || [];
+        const seen = new Set(existing.map(w => w.id));
+        const fresh = newWishes.filter(w => !seen.has(w.id));
+        if (!fresh.length) continue;
+        const merged = [...existing, ...fresh].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        banners[key] = rebuildBanner({ ...banners[key], history: merged }, key);
+      }
+      return { ...state, banners };
+    }
+
+    case ActionTypes.UPDATE_SYNC_CONFIG: {
+      return { ...state, sync: { ...state.sync, ...action.payload.syncConfig } };
     }
 
     case ActionTypes.SET_VERSION: {
@@ -244,7 +270,10 @@ function mergeStates(current, incoming) {
     ...current,
     ...incoming,
     banners,
-    resources: { ...current.resources, ...(incoming.resources || {}) },
-    income: { ...current.income, ...(incoming.income || {}) },
+    sync: { ...current.sync, ...(incoming.sync || {}) },
+    manualCollection: {
+      characters: { ...(current.manualCollection?.characters || {}), ...(incoming.manualCollection?.characters || {}) },
+      weapons: { ...(current.manualCollection?.weapons || {}), ...(incoming.manualCollection?.weapons || {}) },
+    },
   };
 }

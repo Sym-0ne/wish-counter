@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { BANNER_CONFIG } from '../utils/banners';
+import { BANNER_CONFIG, PRIMO_PER_WISH } from '../utils/banners';
 
 const PAGE_SIZE = 50;
 
@@ -76,6 +76,11 @@ function HistoryRow({ wish, bannerKey, cfg }) {
       <span className={`history__pity ${isSoftPity ? 'history__pity--soft' : ''}`}>
         {wish.pityAt ? `pity ${wish.pityAt}` : '—'}
       </span>
+      {wish.rank === 5 && wish.pityAt && (
+        <span className="history__cost" title="Coût estimé en primogemmes">
+          {(wish.pityAt * PRIMO_PER_WISH).toLocaleString('fr-FR')} ✦
+        </span>
+      )}
       <span className="history__date">{formatDate(wish.timestamp)}</span>
       <span className="history__version">v{wish.version || '—'}</span>
     </div>

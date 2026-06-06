@@ -83,27 +83,22 @@ export function processHistory(history, bannerKey) {
       // pity4 continue de monter (règle indépendance).
 
       // Logique 50/50 (character/chronicled)
+      // featured === null signifie "inconnu" (import API) : on ne touche pas à isGuaranteed.
       if (cfg.has5050) {
         if (isGuaranteed) {
-          // Précédente perte de 50/50 → ce 5★ est forcément featured.
-          // On consomme la garantie, ça ne compte ni en win ni en loss.
           isGuaranteed = false;
-        } else if (wish.featured) {
-          // 50/50 gagné, garantie reste à false.
+        } else if (wish.featured === true) {
           isGuaranteed = false;
-        } else {
-          // 50/50 perdu, prochain 5★ garanti featured.
+        } else if (wish.featured === false) {
           isGuaranteed = true;
         }
       }
 
-      // Logique Fate Points (weapon)
+      // Logique Fate Points (weapon) — même règle : null = inconnu, on skip.
       if (cfg.hasFatePoints) {
-        if (wish.featured) {
-          // Arme ciblée obtenue → reset à 0
+        if (wish.featured === true) {
           fatePoints = 0;
-        } else {
-          // Arme non-ciblée (autre featured ou off-banner) → +1 FP, plafond 2
+        } else if (wish.featured === false) {
           fatePoints = Math.min(2, fatePoints + 1);
         }
       }

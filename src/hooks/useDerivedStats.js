@@ -3,13 +3,16 @@ import { calculateLuckScore, compute5050Streak, bannerStats } from '../utils/luc
 import { BANNER_KEYS } from '../utils/banners';
 
 /**
- * Dérive la collection (constellations / refinements) depuis l'union des histories.
- * Ne stocke rien : recomputed à chaque changement.
+ * Dérive la collection (constellations / refinements) depuis l'union des histories
+ * et des entrées manuelles (manualCollection).
+ * Le count manuel est additif : peut être positif (fragments event) ou négatif (correction).
  */
-export function useCollection(banners) {
+export function useCollection(banners, manualCollection) {
   return useMemo(() => {
     const characters = {};
     const weapons = {};
+
+    // 1. Derive from wish history
     for (const key of BANNER_KEYS) {
       const banner = banners[key];
       if (!banner) continue;
@@ -22,8 +25,34 @@ export function useCollection(banners) {
         target[wish.name].count += 1;
       }
     }
+
+    // 2. Merge manual entries
+    const mc = manualCollection || { characters: {}, weapons: {} };
+    for (const [name, data] of Object.entries(mc.characters || {})) {
+      if (!characters[name]) {
+        characters[name] = { count: 0, rank: data.rank, firstObtained: null, manual: true };
+      }
+      characters[name].count = Math.max(0, characters[name].count + data.count);
+      if (data.count !== 0) characters[name].hasManualAdjust = true;
+    }
+    for (const [name, data] of Object.entries(mc.weapons || {})) {
+      if (!weapons[name]) {
+        weapons[name] = { count: 0, rank: data.rank, firstObtained: null, manual: true };
+      }
+      weapons[name].count = Math.max(0, weapons[name].count + data.count);
+      if (data.count !== 0) weapons[name].hasManualAdjust = true;
+    }
+
+    // 3. Remove entries with count 0 (deleted)
+    for (const [k, v] of Object.entries(characters)) {
+      if (v.count === 0 && v.manual) delete characters[k];
+    }
+    for (const [k, v] of Object.entries(weapons)) {
+      if (v.count === 0 && v.manual) delete weapons[k];
+    }
+
     return { characters, weapons };
-  }, [banners]);
+  }, [banners, manualCollection]);
 }
 
 export function useLuckScore(banners) {

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { X, RefreshCw, AlertTriangle } from 'lucide-react';
-import { IncomeConfig } from './IncomeConfig';
 import { ExportImport } from './ExportImport';
+import { SyncConfig } from './SyncConfig';
 import { CURRENT_VERSION } from '../store/initialState';
 
 /**
@@ -11,9 +11,10 @@ export function Settings({
   open,
   onClose,
   state,
-  onUpdateIncome,
   onSetVersion,
   onImport,
+  onImportSynced,
+  onUpdateSyncConfig,
   onResetBanner,
   onResetAll,
 }) {
@@ -63,9 +64,11 @@ export function Settings({
             </div>
           </section>
 
-          <IncomeConfig
-            income={state.income}
-            onChange={onUpdateIncome}
+          <SyncConfig
+            sync={state.sync}
+            banners={state.banners}
+            onImportSynced={onImportSynced}
+            onUpdateSyncConfig={onUpdateSyncConfig}
           />
 
           <ExportImport state={state} onImport={onImport} />

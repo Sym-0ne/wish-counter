@@ -1,0 +1,47 @@
+{
+  "name": "Genshin Wish Tracker",
+  "short_name": "WishTracker",
+  "description": "Suivi de vœux Genshin Impact — pity, constellations, stats.",
+  "start_url": "/wish-counter/",
+  "scope": "/wish-counter/",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#c0a060",
+  "lang": "fr",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/wish-counter/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/wish-counter/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/wish-counter/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/wish-counter/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Bannière personnage",
+      "short_name": "Personnage",
+      "url": "/wish-counter/?banner=character",
+      "description": "Ouvrir la bannière personnage directement"
+    }
+  ],
+  "categories": ["games", "utilities"]
+}
