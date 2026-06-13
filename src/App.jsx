@@ -1,8 +1,10 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { usePersistedReducer } from './hooks/usePersistedReducer';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useLuckScore, useStreak, useNameSuggestions } from './hooks/useDerivedStats';
 import * as A from './store/actions';
+import { fetchBannerInfoFromAuth } from './utils/gachaInfo';
+import { isBannerStale } from './utils/bannerFetch';
 
 import { Header } from './components/Header';
 import { BannerInfo } from './components/BannerInfo';
@@ -28,6 +30,24 @@ export default function App({ profileId = 'default', profileProps = {} }) {
   const luckScore = useLuckScore(state.banners);
   const streak = useStreak(state.banners);
   const nameSuggestions = useNameSuggestions(state.banners);
+
+  // Auto-fetch banner info (featured character, end date) via the same authkey used for
+  // wish sync. Runs on mount and after every successful wish sync (lastSync update).
+  useEffect(() => {
+    const { workerUrl, authkeyUrl } = state.sync;
+    if (!workerUrl || !authkeyUrl) return;
+
+    fetchBannerInfoFromAuth(workerUrl, authkeyUrl)
+      .then((bannerInfo) => {
+        for (const [key, meta] of Object.entries(bannerInfo)) {
+          if (meta && state.banners[key]) {
+            dispatch(A.updateBannerMetadata(key, meta));
+          }
+        }
+      })
+      .catch(() => {}); // Best-effort — silent on expired authkey or network error
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.sync.lastSync]);
 
   const handleAddWish = useCallback(
     (wish) => dispatch(A.addWish(activeKey, wish)),

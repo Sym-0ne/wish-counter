@@ -63,10 +63,12 @@ async function fetchAnnData(region) {
   const json = await resp.json();
   if (json.retcode !== 0) return null;
 
-  // Combine both list types — banner images appear in pic_list, events in list
-  const list = json.data?.list ?? [];
+  // data.list is an array of category groups, each with their own .list of items.
+  // Flatten them. Also check pic_list.
+  const groups = json.data?.list ?? [];
+  const flatList = groups.flatMap((g) => g.list ?? []);
   const picList = json.data?.pic_list ?? [];
-  const all = [...list, ...picList];
+  const all = [...flatList, ...picList];
   return all.length ? all : null;
 }
 
