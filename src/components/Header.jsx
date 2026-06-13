@@ -1,8 +1,39 @@
-import { Sparkles, BarChart3, Layers, History, Settings as SettingsIcon } from 'lucide-react';
+import { Sparkles, BarChart3, Layers, History, RefreshCw, Settings as SettingsIcon } from 'lucide-react';
 import { BANNER_CONFIG, BANNER_KEYS } from '../utils/banners';
 import { ProfileBar } from './ProfileBar';
 
-export function Header({ activeBanner, view, onBannerChange, onViewChange, onOpenSettings, profileProps }) {
+function SyncButton({ sync, syncing, onOpenSync }) {
+  const hasConfig = sync?.workerUrl && sync?.authkeyUrl;
+  const lastSync = sync?.lastSync;
+
+  let label = 'Sync';
+  let title = 'Synchroniser les vœux';
+
+  if (syncing) {
+    label = '…';
+    title = 'Synchronisation en cours';
+  } else if (lastSync) {
+    const diff = Date.now() - new Date(lastSync).getTime();
+    const mins = Math.floor(diff / 60000);
+    const hours = Math.floor(mins / 60);
+    if (hours > 0) label = `${hours}h`;
+    else if (mins > 0) label = `${mins}m`;
+    else label = 'Sync ✓';
+  }
+
+  return (
+    <button
+      className={`btn btn--ghost btn--small sync-header-btn ${!hasConfig ? 'sync-header-btn--unconfigured' : ''}`}
+      onClick={onOpenSync}
+      title={title}
+    >
+      <RefreshCw size={13} className={syncing ? 'spin' : ''} />
+      <span>{label}</span>
+    </button>
+  );
+}
+
+export function Header({ activeBanner, view, onBannerChange, onViewChange, onOpenSettings, onOpenSync, sync, syncing, profileProps }) {
   return (
     <header className="header">
       <div className="header__inner">
@@ -51,6 +82,8 @@ export function Header({ activeBanner, view, onBannerChange, onViewChange, onOpe
             Historique
           </button>
         </div>
+
+        <SyncButton sync={sync} syncing={syncing} onOpenSync={onOpenSync} />
 
         {profileProps?.profiles && (
           <ProfileBar

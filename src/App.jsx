@@ -16,14 +16,34 @@ import { Wishlist } from './components/Wishlist';
 import { StatsPanel } from './components/StatsPanel';
 import { ConstellationTracker } from './components/ConstellationTracker';
 import { Settings } from './components/Settings';
+import { SyncModal } from './components/SyncModal';
 import { BannerHistory } from './components/BannerHistory';
 
 export default function App({ profileId = 'default', profileProps = {} }) {
   const [state, dispatch] = usePersistedReducer(profileId);
   const [view, setView] = useState('banner');
   const [wishModalOpen, setWishModalOpen] = useState(false);
-  const [addRank, setAddRank] = useState(5); // rang pré-rempli à l'ouverture du modal
+  const [addRank, setAddRank] = useState(5);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [syncOpen, setSyncOpen] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
+  // Read ?authkey= URL param set by the PowerShell helper script.
+  // Extract the value once on mount, then remove it from the URL to keep it clean.
+  const [initialAuthkeyUrl, setInitialAuthkeyUrl] = useState(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const raw = params.get('authkey');
+      if (raw) {
+        const decoded = decodeURIComponent(raw);
+        // Clean the URL immediately so the authkey isn't sitting in browser history
+        const clean = window.location.pathname + window.location.hash;
+        window.history.replaceState(null, '', clean);
+        return decoded;
+      }
+    } catch { /* ignore */ }
+    return '';
+  });
 
   const activeKey = state.activeBanner;
   const activeBanner = state.banners[activeKey];
@@ -31,6 +51,11 @@ export default function App({ profileId = 'default', profileProps = {} }) {
   const luckScore = useLuckScore(state.banners);
   const streak = useStreak(state.banners);
   const nameSuggestions = useNameSuggestions(state.banners);
+
+  // Auto-open the sync modal when the app was launched with ?authkey= URL param
+  useEffect(() => {
+    if (initialAuthkeyUrl) setSyncOpen(true);
+  }, [initialAuthkeyUrl]);
 
   // Auto-fetch banner info (featured character, end date) via the same authkey used for
   // wish sync. Runs on mount and after every successful wish sync (lastSync update).
@@ -86,6 +111,9 @@ export default function App({ profileId = 'default', profileProps = {} }) {
         onBannerChange={(b) => dispatch(A.setActiveBanner(b))}
         onViewChange={setView}
         onOpenSettings={() => setSettingsOpen(true)}
+        onOpenSync={() => setSyncOpen(true)}
+        sync={state.sync}
+        syncing={syncing}
         profileProps={profileProps}
       />
 
@@ -162,6 +190,19 @@ export default function App({ profileId = 'default', profileProps = {} }) {
         banner={activeBanner}
         initialRank={addRank}
         nameSuggestions={nameSuggestions}
+      />
+
+      <SyncModal
+        open={syncOpen}
+        onClose={() => { setSyncOpen(false); setInitialAuthkeyUrl(''); }}
+        sync={state.sync}
+        banners={state.banners}
+        initialAuthkeyUrl={initialAuthkeyUrl}
+        onImportSynced={(groups) => {
+          setSyncing(false);
+          dispatch(A.importSyncedWishes(groups));
+        }}
+        onUpdateSyncConfig={(cfg) => dispatch(A.updateSyncConfig(cfg))}
       />
 
       <Settings
