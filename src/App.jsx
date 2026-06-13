@@ -16,6 +16,7 @@ import { Wishlist } from './components/Wishlist';
 import { StatsPanel } from './components/StatsPanel';
 import { ConstellationTracker } from './components/ConstellationTracker';
 import { Settings } from './components/Settings';
+import { BannerHistory } from './components/BannerHistory';
 
 export default function App({ profileId = 'default', profileProps = {} }) {
   const [state, dispatch] = usePersistedReducer(profileId);
@@ -132,6 +133,12 @@ export default function App({ profileId = 'default', profileProps = {} }) {
       {view === 'stats' && (
         <main className="app__main app__main--full">
           <StatsPanel banners={state.banners} />
+        </main>
+      )}
+
+      {view === 'history' && (
+        <main className="app__main app__main--full">
+          <BannerHistory banners={state.banners} />
         </main>
       )}
 

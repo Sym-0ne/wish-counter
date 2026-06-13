@@ -1,4 +1,4 @@
-import { Sparkles, BarChart3, Layers, Settings as SettingsIcon } from 'lucide-react';
+import { Sparkles, BarChart3, Layers, History, Settings as SettingsIcon } from 'lucide-react';
 import { BANNER_CONFIG, BANNER_KEYS } from '../utils/banners';
 import { ProfileBar } from './ProfileBar';
 
@@ -42,6 +42,13 @@ export function Header({ activeBanner, view, onBannerChange, onViewChange, onOpe
           >
             <Layers size={14} style={{ marginRight: 4 }} />
             Collection
+          </button>
+          <button
+            className={view === 'history' ? 'active' : ''}
+            onClick={() => onViewChange('history')}
+          >
+            <History size={14} style={{ marginRight: 4 }} />
+            Historique
           </button>
         </div>
 
