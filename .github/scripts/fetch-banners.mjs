@@ -8,37 +8,30 @@
  *   node .github/scripts/fetch-banners.mjs
  */
 
-import { writeFileSync, readFileSync, existsSync } from 'fs';
+import { writeFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_FILE = join(__dirname, '../../public/banners-current.json');
 
-// HoYoverse global announcement API
 const ANN_BASE = 'https://sg-hk4e-api.hoyoverse.com/common/hk4e_global/announcement/api';
 
-// Try multiple regions in order — stop at the first one that returns data
 const REGIONS = ['os_usa', 'os_euro', 'os_asia'];
 
-// Keywords used to identify banner announcements in titles
-const CHAR_WISH_RE = /character\s+event\s+wish/i;
+// Banner title keywords — broad enough to survive minor title changes
+const CHAR_WISH_RE = /character\s+event\s+wish|event\s+wish.*(?:targeted|limited)/i;
 const WEAPON_WISH_RE = /epitome\s+invocation/i;
 const CHRON_WISH_RE = /chronicled\s+wish/i;
 const STANDARD_WISH_RE = /wanderlust\s+invocation/i;
 
-// Extract the featured character name from an announcement title.
-// Matches patterns like:
-//   "Character Event Wish - Hu Tao: Targeted ..."
-//   "Character Event Wish-2 - Navia: Targeted ..."
 function extractCharacter(title) {
-  // Match "- NAME:" or "- NAME" at end
-  const m = title.match(/[-–]\s+([A-Za-zÀ-ɏ][A-Za-zÀ-ɏ\s'`\-]+?)\s*(?::|$)/);
-  if (!m) return null;
-  return m[1].trim();
+  // "Character Event Wish - Hu Tao: Targeted..."
+  // "... - Navia: ..."
+  const m = title.match(/[-–]\s+([A-Za-zÀ-ɏ][A-Za-zÀ-ɏ\s'`\-]{1,24}?)\s*(?::|$)/);
+  return m ? m[1].trim() : null;
 }
 
-// Convert HoYoverse time string (UTC+8) to YYYY-MM-DD
 function toDate(timeStr) {
   if (!timeStr) return null;
   // "2025-06-18 17:59:59" is UTC+8
@@ -46,7 +39,7 @@ function toDate(timeStr) {
   return dt.toISOString().slice(0, 10);
 }
 
-async function fetchAnnList(region) {
+async function fetchAnnData(region) {
   const params = new URLSearchParams({
     game: 'hk4e',
     game_biz: 'hk4e_global',
@@ -67,24 +60,25 @@ async function fetchAnnList(region) {
   });
 
   if (!resp.ok) return null;
-
   const json = await resp.json();
   if (json.retcode !== 0) return null;
 
-  // The list may be in json.data.list or json.data.pic_list
+  // Combine both list types — banner images appear in pic_list, events in list
   const list = json.data?.list ?? [];
-  return list.length ? list : null;
+  const picList = json.data?.pic_list ?? [];
+  const all = [...list, ...picList];
+  return all.length ? all : null;
 }
 
 function parseBanners(announcements) {
-  const result = {
-    character: null,
-    weapon: null,
-    chronicled: null,
-    standard: null,
-  };
-
+  const result = { character: null, weapon: null, chronicled: null, standard: null };
   let char1Found = false;
+
+  // Log all titles so we can debug matching
+  console.log('  Announcement titles found:');
+  for (const ann of announcements) {
+    console.log(`    [${ann.type ?? '?'}] ${ann.title ?? '(no title)'}`);
+  }
 
   for (const ann of announcements) {
     const title = ann.title ?? '';
@@ -94,19 +88,16 @@ function parseBanners(announcements) {
     if (CHAR_WISH_RE.test(title)) {
       const featured = extractCharacter(title);
       if (!char1Found) {
-        // First character banner encountered
         result.character = { featured, endDate, startDate };
         char1Found = true;
       }
-      // Ignore the second character banner (gacha_type 400) — app merges them
     } else if (WEAPON_WISH_RE.test(title)) {
       if (!result.weapon) {
         result.weapon = { featuredWeapons: ['', ''], endDate, startDate };
       }
     } else if (CHRON_WISH_RE.test(title)) {
       if (!result.chronicled) {
-        const featured = extractCharacter(title);
-        result.chronicled = { featured, endDate, startDate };
+        result.chronicled = { featured: extractCharacter(title), endDate, startDate };
       }
     } else if (STANDARD_WISH_RE.test(title)) {
       result.standard = { endDate, startDate };
@@ -124,20 +115,21 @@ async function main() {
   for (const region of REGIONS) {
     try {
       console.log(`  Trying region: ${region}`);
-      announcements = await fetchAnnList(region);
+      announcements = await fetchAnnData(region);
       if (announcements) {
         console.log(`  Got ${announcements.length} announcements from ${region}`);
         break;
+      } else {
+        console.log(`  ${region}: API returned empty lists`);
       }
     } catch (err) {
-      console.warn(`  Region ${region} failed: ${err.message}`);
+      console.warn(`  ${region} failed: ${err.message}`);
     }
   }
 
   if (!announcements) {
-    console.warn('All regions returned no data. Keeping existing banners-current.json.');
+    console.warn('All regions returned no data — keeping existing banners-current.json.');
     if (!existsSync(OUT_FILE)) {
-      // Create an empty fallback so the app doesn't 404
       writeFileSync(OUT_FILE, JSON.stringify({ fetchedAt: null, banners: {} }, null, 2), 'utf8');
     }
     return;
@@ -145,29 +137,21 @@ async function main() {
 
   const banners = parseBanners(announcements);
 
-  // Log what we found
-  if (banners.character?.featured) {
-    console.log(`  Character: ${banners.character.featured} (until ${banners.character.endDate})`);
+  const anyFound = Object.values(banners).some(Boolean);
+  if (!anyFound) {
+    console.warn('No banner announcements matched. Raw titles logged above.');
+    // Still write with current timestamp so we know the fetch ran
   } else {
-    console.log('  Character: not found');
-  }
-  if (banners.weapon) {
-    console.log(`  Weapon banner: until ${banners.weapon.endDate}`);
-  }
-  if (banners.chronicled?.featured) {
-    console.log(`  Chronicled: ${banners.chronicled.featured} (until ${banners.chronicled.endDate})`);
+    if (banners.character?.featured) console.log(`  → Character: ${banners.character.featured} (until ${banners.character.endDate})`);
+    if (banners.weapon)             console.log(`  → Weapon: until ${banners.weapon.endDate}`);
+    if (banners.chronicled?.featured) console.log(`  → Chronicled: ${banners.chronicled.featured} (until ${banners.chronicled.endDate})`);
   }
 
-  const output = {
-    fetchedAt: new Date().toISOString(),
-    banners,
-  };
-
-  writeFileSync(OUT_FILE, JSON.stringify(output, null, 2), 'utf8');
+  writeFileSync(OUT_FILE, JSON.stringify({ fetchedAt: new Date().toISOString(), banners }, null, 2), 'utf8');
   console.log(`Wrote ${OUT_FILE}`);
 }
 
 main().catch((err) => {
   console.error('fetch-banners.mjs error:', err);
-  process.exit(0); // Don't fail the build if banner fetch fails
+  process.exit(0); // Don't fail the build
 });
