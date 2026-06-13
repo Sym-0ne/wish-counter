@@ -1,0 +1,40 @@
+name: Update banner data
+
+# Runs daily at 03:00 UTC and on manual trigger.
+# Fetches current Genshin banner info from HoYoverse and commits it.
+# If banners-current.json changed, the deploy workflow picks it up automatically.
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Fetch banner data
+        run: node .github/scripts/fetch-banners.mjs
+
+      - name: Commit if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/banners-current.json
+          if git diff --cached --quiet; then
+            echo "No changes to banner data."
+          else
+            git commit -m "chore: update banners-current.json [skip ci]"
+            git push
+          fi

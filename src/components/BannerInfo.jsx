@@ -7,11 +7,9 @@ import {
   characterIconUrl,
   weaponIconUrl,
 } from '../utils/genshinApi';
+import { getCurrentBanners, isBannerStale } from '../utils/bannerFetch';
 
-/**
- * Charge et cache le portrait associé à un nom de personnage/arme.
- * Retourne l'URL de l'image ou null si non trouvé.
- */
+// Loads and caches the portrait URL for a character or weapon name.
 function usePortrait(name, isWeapon) {
   const [iconUrl, setIconUrl] = useState(null);
   const lastFetched = useRef('');
@@ -30,7 +28,7 @@ function usePortrait(name, isWeapon) {
         const url = isWeapon ? weaponIconUrl(slug) : characterIconUrl(slug);
         if (!cancelled) setIconUrl(url);
       } catch {
-        // Silencieux — le portrait est décoratif
+        // Portrait is decorative — fail silently
       }
     })();
 
@@ -44,7 +42,6 @@ function FeaturedField({ label, value, placeholder, isWeapon, onChange }) {
   const portrait = usePortrait(value, isWeapon);
   const [imgError, setImgError] = useState(false);
 
-  // Reset l'erreur si l'URL change
   useEffect(() => setImgError(false), [portrait]);
 
   return (
@@ -78,17 +75,66 @@ function FeaturedField({ label, value, placeholder, isWeapon, onChange }) {
 export function BannerInfo({ bannerKey, banner, onChange }) {
   const cfg = BANNER_CONFIG[bannerKey];
   const m = banner.metadata;
+  const [autoFilled, setAutoFilled] = useState(false);
+
+  // Auto-populate from banners-current.json when metadata is empty or stale.
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      const allBanners = await getCurrentBanners();
+      if (cancelled || !allBanners) return;
+
+      const remote = allBanners[bannerKey];
+      if (!remote) return;
+
+      // Only auto-fill if metadata is empty or the stored end date is past
+      const shouldFill = isBannerStale(m);
+
+      if (!shouldFill) return;
+
+      const patch = {};
+
+      if (bannerKey === 'weapon') {
+        if (remote.featuredWeapons?.length) {
+          patch.featuredWeapons = remote.featuredWeapons;
+        }
+      } else if (remote.featured) {
+        patch.featured = remote.featured;
+      }
+
+      if (remote.endDate) patch.endDate = remote.endDate;
+
+      if (Object.keys(patch).length && !cancelled) {
+        onChange(patch);
+        setAutoFilled(true);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bannerKey]);
 
   const update = (patch) => onChange(patch);
 
-  // Nom principal featured (personnage ou arme 1)
   const featuredName = bannerKey === 'weapon'
     ? (m.featuredWeapons?.[0] || '')
     : m.featured || '';
 
   return (
     <div className="card">
-      <div className="card__title">{cfg.longLabel}</div>
+      <div className="card__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {cfg.longLabel}
+        {autoFilled && (
+          <span
+            className="badge badge--success"
+            title="Données récupérées automatiquement"
+            style={{ fontSize: '0.65rem', fontFamily: 'var(--font-body)' }}
+          >
+            ↻ auto
+          </span>
+        )}
+      </div>
 
       <div className="banner-info__grid">
         {bannerKey !== 'standard' && (
