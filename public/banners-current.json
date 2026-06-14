@@ -1,4 +1,9 @@
 {
-  "fetchedAt": null,
-  "banners": {}
+  "fetchedAt": "2026-06-14T07:52:35.960Z",
+  "banners": {
+    "character": null,
+    "weapon": null,
+    "chronicled": null,
+    "standard": null
+  }
 }
