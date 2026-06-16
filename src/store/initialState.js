@@ -36,7 +36,9 @@ export const initialState = {
     weapons: {},
   },
   sync: {
-    workerUrl: '',    // URL du Cloudflare Worker proxy
+    // VITE_WORKER_URL is injected at build time from the WORKER_URL GitHub secret.
+    // Users don't need to configure this — the maintainer deploys one shared Worker.
+    workerUrl: import.meta.env.VITE_WORKER_URL || '',
     authkeyUrl: '',   // URL complète avec authkey (expire ~24h)
     lastSync: null,   // ISO string de la dernière sync réussie
   },

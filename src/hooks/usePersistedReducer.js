@@ -13,7 +13,12 @@ function makeInit(storageKey) {
             ...initial,
             ...parsed,
             banners: { ...initial.banners, ...parsed.banners },
-            sync: { ...initial.sync, ...(parsed.sync || {}) },
+            sync: {
+              ...initial.sync,
+              ...(parsed.sync || {}),
+              // Keep built-in Worker URL when user hasn't configured a custom one
+              workerUrl: parsed.sync?.workerUrl || initial.sync.workerUrl,
+            },
             manualCollection: {
               characters: { ...(parsed.manualCollection?.characters || {}) },
               weapons: { ...(parsed.manualCollection?.weapons || {}) },

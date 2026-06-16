@@ -3,10 +3,10 @@ import { X, RefreshCw, CheckCircle, AlertCircle, Copy, Check, ChevronDown, Chevr
 import { syncAllBanners, countNewWishes } from '../utils/wishSync';
 import { fetchBannerInfoFromAuth } from '../utils/gachaInfo';
 
-// PowerShell one-liner that reads the game log and opens this app with the authkey URL
+// PowerShell one-liner — reads game log and opens the app with authkey pre-filled
 const PS_SCRIPT = `$url = Get-Content "$env:APPDATA\\..\\LocalLow\\miHoYo\\Genshin Impact\\output_log.txt" | Select-String "OnGetWebViewPageFinish:.*getGachaLog" | Select-Object -Last 1 | ForEach-Object { ($_ -split "OnGetWebViewPageFinish:")[1].Trim() }; if ($url) { Start-Process "https://sym-0ne.github.io/wish-counter/?authkey=$([uri]::EscapeDataString($url))" } else { Write-Host "Ouvre d'abord l'historique de voeux dans le jeu." }`;
 
-function CopyButton({ text }) {
+function CopyButton({ text, label = 'Copier' }) {
   const [copied, setCopied] = useState(false);
 
   function handleCopy() {
@@ -17,48 +17,47 @@ function CopyButton({ text }) {
   }
 
   return (
-    <button className="btn btn--ghost btn--small" onClick={handleCopy} title="Copier">
+    <button className="btn btn--ghost btn--small" onClick={handleCopy} title={label}>
       {copied ? <Check size={13} /> : <Copy size={13} />}
-      {copied ? 'Copié !' : 'Copier'}
+      {copied ? 'Copié !' : label}
     </button>
   );
 }
 
 function StepBadge({ n, active, done }) {
   return (
-    <div
-      style={{
-        width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '0.75rem', fontWeight: 700,
-        background: done ? 'var(--success)' : active ? 'var(--gold)' : 'var(--surface-2)',
-        color: done || active ? '#000' : 'var(--muted)',
-        border: `1px solid ${done ? 'var(--success)' : active ? 'var(--gold)' : 'var(--border)'}`,
-        transition: 'all 0.2s',
-      }}
-    >
+    <div style={{
+      width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: '0.75rem', fontWeight: 700,
+      background: done ? 'var(--success)' : active ? 'var(--gold)' : 'var(--surface-2)',
+      color: done || active ? '#000' : 'var(--muted)',
+      border: `1px solid ${done ? 'var(--success)' : active ? 'var(--gold)' : 'var(--border)'}`,
+      transition: 'all 0.2s',
+    }}>
       {done ? '✓' : n}
     </div>
   );
 }
 
+const DEFAULT_WORKER = import.meta.env.VITE_WORKER_URL || '';
+
 export function SyncModal({ open, onClose, sync, banners, onImportSynced, onUpdateSyncConfig, onBannerInfoFetched, initialAuthkeyUrl }) {
-  const [workerUrl, setWorkerUrl] = useState(sync.workerUrl || '');
+  const workerUrl  = sync.workerUrl || DEFAULT_WORKER;
   const [authkeyUrl, setAuthkeyUrl] = useState(initialAuthkeyUrl || sync.authkeyUrl || '');
-  const [syncing, setSyncing] = useState(false);
+  const [syncing,  setSyncing]  = useState(false);
   const [progress, setProgress] = useState('');
-  const [result, setResult] = useState(null);
-  const [showWorker, setShowWorker] = useState(false);
+  const [result,   setResult]   = useState(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [customWorker, setCustomWorker] = useState(sync.workerUrl || '');
   const authkeyRef = useRef(null);
 
-  // If a fresh authkey URL comes from URL param, fill it in
+  const hasBuiltinWorker = !!DEFAULT_WORKER;
+
   useEffect(() => {
-    if (initialAuthkeyUrl) {
-      setAuthkeyUrl(initialAuthkeyUrl);
-    }
+    if (initialAuthkeyUrl) setAuthkeyUrl(initialAuthkeyUrl);
   }, [initialAuthkeyUrl]);
 
-  // Auto-focus the authkey field when modal opens without configured authkey
   useEffect(() => {
     if (open && !authkeyUrl && authkeyRef.current) {
       setTimeout(() => authkeyRef.current?.focus(), 150);
@@ -67,12 +66,10 @@ export function SyncModal({ open, onClose, sync, banners, onImportSynced, onUpda
 
   if (!open) return null;
 
-  const workerOk = workerUrl.trim().startsWith('https://');
+  const effectiveWorker = (customWorker.trim().startsWith('https://') ? customWorker.trim() : null) || workerUrl;
+  const workerOk  = effectiveWorker.startsWith('https://');
   const authkeyOk = authkeyUrl.trim().startsWith('https://');
-  const canSync = workerOk && authkeyOk;
-
-  const step1Done = workerOk;
-  const step2Done = authkeyOk;
+  const canSync   = workerOk && authkeyOk;
 
   async function handleSync() {
     setSyncing(true);
@@ -81,26 +78,23 @@ export function SyncModal({ open, onClose, sync, banners, onImportSynced, onUpda
 
     try {
       const groups = await syncAllBanners(
-        workerUrl.trim(),
+        effectiveWorker,
         authkeyUrl.trim(),
         banners,
         setProgress,
       );
       const total = countNewWishes(groups);
 
-      // Fetch current banner names + dates with the same authkey
       setProgress('Mise à jour des infos de bannière…');
       let bannerNames = {};
       try {
-        bannerNames = await fetchBannerInfoFromAuth(workerUrl.trim(), authkeyUrl.trim());
+        bannerNames = await fetchBannerInfoFromAuth(effectiveWorker, authkeyUrl.trim());
         if (onBannerInfoFetched) onBannerInfoFetched(bannerNames);
-      } catch {
-        // Best-effort — don't fail the whole sync if banner info fetch fails
-      }
+      } catch { /* best-effort */ }
 
       onImportSynced(groups);
       onUpdateSyncConfig({
-        workerUrl: workerUrl.trim(),
+        workerUrl: effectiveWorker,
         authkeyUrl: authkeyUrl.trim(),
         lastSync: new Date().toISOString(),
       });
@@ -115,91 +109,49 @@ export function SyncModal({ open, onClose, sync, banners, onImportSynced, onUpda
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div
-        className="modal sync-modal"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="modal sync-modal" onClick={(e) => e.stopPropagation()}>
+
         {/* Header */}
         <div className="modal__header">
           <h2 className="modal__title">
             <RefreshCw size={17} style={{ marginRight: 8, verticalAlign: 'middle' }} />
             Synchroniser les vœux
           </h2>
-          <button className="modal__close" onClick={onClose}>
-            <X size={18} />
-          </button>
+          <button className="modal__close" onClick={onClose}><X size={18} /></button>
         </div>
 
         <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
 
-          {/* STEP 1 — Worker */}
+          {/* STEP 1 — Open wish history */}
           <div className="sync-step">
             <div className="sync-step__header">
-              <StepBadge n={1} active={!step1Done} done={step1Done} />
-              <span className="sync-step__title">Proxy Cloudflare Worker</span>
-              {step1Done && (
-                <button
-                  className="btn btn--ghost btn--small"
-                  style={{ marginLeft: 'auto' }}
-                  onClick={() => setShowWorker((v) => !v)}
-                >
-                  {showWorker ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-                  {showWorker ? 'Masquer' : 'Modifier'}
-                </button>
-              )}
+              <StepBadge n={1} active={!authkeyOk} done={authkeyOk} />
+              <span className="sync-step__title">Ouvrir l'historique de vœux dans le jeu</span>
             </div>
-
-            {(showWorker || !step1Done) && (
-              <div className="sync-step__body">
-                {!step1Done && (
-                  <p className="sync-step__desc">
-                    Déploie un Worker gratuit sur{' '}
-                    <a href="https://dash.cloudflare.com" target="_blank" rel="noreferrer" style={{ color: 'var(--gold)' }}>
-                      dash.cloudflare.com
-                    </a>{' '}
-                    → Workers & Pages → Create Worker → colle le fichier{' '}
-                    <code>cloudflare-worker/worker.js</code> du repo.
-                  </p>
-                )}
-                <div className="modal__field">
-                  <label>URL du Worker</label>
-                  <input
-                    type="url"
-                    placeholder="https://genshin-sync.ton-compte.workers.dev"
-                    value={workerUrl}
-                    onChange={(e) => setWorkerUrl(e.target.value)}
-                    disabled={syncing}
-                  />
-                </div>
-              </div>
-            )}
-
-            {step1Done && !showWorker && (
-              <p style={{ fontSize: '0.78rem', color: 'var(--success)', marginLeft: 32, marginTop: 4 }}>
-                ✓ Configuré : <span style={{ color: 'var(--muted)' }}>{workerUrl.replace('https://', '').split('/')[0]}</span>
-              </p>
-            )}
-          </div>
-
-          {/* STEP 2 — Authkey */}
-          <div className="sync-step">
-            <div className="sync-step__header">
-              <StepBadge n={2} active={step1Done && !step2Done} done={step2Done} />
-              <span className="sync-step__title">URL authkey (expire toutes les 24h)</span>
-            </div>
-
             <div className="sync-step__body">
               <p className="sync-step__desc">
-                Lance Genshin Impact, ouvre l'<strong>historique de vœux</strong>, puis copie-colle cette commande dans <strong>PowerShell</strong> — elle lit le log du jeu et ouvre l'app automatiquement.
+                Lance <strong>Genshin Impact</strong>, puis ouvre l'<strong>historique de vœux</strong> depuis le menu Portail des vœux → Détails.
+                Attends que la page se charge complètement.
               </p>
+            </div>
+          </div>
 
+          {/* STEP 2 — Get authkey */}
+          <div className="sync-step">
+            <div className="sync-step__header">
+              <StepBadge n={2} active={!authkeyOk} done={authkeyOk} />
+              <span className="sync-step__title">Extraire l'URL authkey</span>
+            </div>
+            <div className="sync-step__body">
+              <p className="sync-step__desc">
+                Colle cette commande dans <strong>PowerShell</strong> — elle lit le log du jeu et ouvre cette page automatiquement avec l'authkey :
+              </p>
               <div className="sync-code-block">
                 <code>{PS_SCRIPT}</code>
                 <CopyButton text={PS_SCRIPT} />
               </div>
-
               <p className="sync-step__desc" style={{ marginTop: 8 }}>
-                Ou colle l'URL directement (commence par <code>https://</code>) :
+                Ou colle l'URL manuellement ci-dessous (commence par <code>https://public-operation-hk4e</code>) :
               </p>
               <div className="modal__field">
                 <input
@@ -207,11 +159,43 @@ export function SyncModal({ open, onClose, sync, banners, onImportSynced, onUpda
                   type="url"
                   placeholder="https://public-operation-hk4e-sg.hoyoverse.com/gacha_info/api/getGachaLog?authkey_ver=1&…"
                   value={authkeyUrl}
-                  onChange={(e) => setAuthkeyUrl(e.target.value)}
+                  onChange={(e) => { setAuthkeyUrl(e.target.value); setResult(null); }}
                   disabled={syncing}
                 />
               </div>
             </div>
+          </div>
+
+          {/* Advanced — custom Worker URL */}
+          <div>
+            <button
+              className="btn btn--ghost btn--small"
+              style={{ fontSize: '0.75rem', color: 'var(--muted)' }}
+              onClick={() => setShowAdvanced((v) => !v)}
+            >
+              {showAdvanced ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+              Paramètres avancés
+            </button>
+
+            {showAdvanced && (
+              <div style={{ marginTop: 10, padding: 12, background: 'var(--surface-2)', borderRadius: 8, border: '1px solid var(--border)' }}>
+                <div className="modal__field">
+                  <label>Worker URL (optionnel — laisse vide pour utiliser le serveur partagé)</label>
+                  <input
+                    type="url"
+                    placeholder={DEFAULT_WORKER || 'https://ton-worker.workers.dev'}
+                    value={customWorker}
+                    onChange={(e) => setCustomWorker(e.target.value)}
+                    disabled={syncing}
+                  />
+                </div>
+                {hasBuiltinWorker && (
+                  <p style={{ fontSize: '0.73rem', color: 'var(--muted)', marginTop: 6 }}>
+                    Serveur partagé actif : <span style={{ color: 'var(--success)' }}>{DEFAULT_WORKER.replace('https://', '').split('/')[0]}</span>
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Last sync info */}
@@ -221,8 +205,14 @@ export function SyncModal({ open, onClose, sync, banners, onImportSynced, onUpda
             </p>
           )}
 
-          {/* Sync button + progress */}
+          {/* Sync button */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {!workerOk && !hasBuiltinWorker && (
+              <p style={{ fontSize: '0.8rem', color: 'var(--soft-pity)', margin: 0 }}>
+                ⚠ Aucun serveur proxy configuré — déploie un Worker Cloudflare ou demande à l'admin d'en configurer un.
+              </p>
+            )}
+
             <button
               className="btn btn--primary"
               style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: '1rem' }}
@@ -240,26 +230,17 @@ export function SyncModal({ open, onClose, sync, banners, onImportSynced, onUpda
             )}
 
             {result && (
-              <div
-                className={`sync-result sync-result--${result.ok ? 'ok' : 'error'}`}
-              >
+              <div className={`sync-result sync-result--${result.ok ? 'ok' : 'error'}`}>
                 {result.ok ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <span><CheckCircle size={15} style={{ verticalAlign: 'middle', marginRight: 6 }} />{result.count} nouveau(x) vœu(x) importé(s)</span>
+                    <span>
+                      <CheckCircle size={15} style={{ verticalAlign: 'middle', marginRight: 6 }} />
+                      {result.count} nouveau(x) vœu(x) importé(s)
+                    </span>
                     {result.bannerNames?.character?.featured && (
                       <span style={{ fontSize: '0.78rem', opacity: 0.85 }}>
                         ★ Bannière personnage : <strong>{result.bannerNames.character.featured}</strong>
                         {result.bannerNames.character.endDate ? ` (jusqu'au ${result.bannerNames.character.endDate})` : ''}
-                      </span>
-                    )}
-                    {result.bannerNames?.chronicled?.featured && (
-                      <span style={{ fontSize: '0.78rem', opacity: 0.85 }}>
-                        ★ Chroniques : <strong>{result.bannerNames.chronicled.featured}</strong>
-                      </span>
-                    )}
-                    {result.bannerNames && !result.bannerNames.character?.featured && (
-                      <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>
-                        Infos de bannière non disponibles (nom non extrait)
                       </span>
                     )}
                   </div>
