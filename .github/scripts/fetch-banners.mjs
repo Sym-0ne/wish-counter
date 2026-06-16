@@ -1,218 +1,175 @@
 #!/usr/bin/env node
 /**
- * Generates banners-current.json from the manually-maintained banner schedule.
+ * Fetches current Genshin Impact banner data from paimon.moe's public GitHub data.
  * Runs in GitHub Actions before the Vite build.
+ * Writes to public/banners-current.json — the app reads this at runtime.
  *
- * HOW TO UPDATE (each patch, ~every 3 weeks):
- *   1. Edit BANNER_SCHEDULE below with the new patch's banner info
- *   2. Commit and push — GitHub Actions will deploy the update automatically
+ * Data source: github.com/MadeBaruna/paimon-moe (src/data/banners.js)
+ * Updated by the paimon.moe community each patch.
  *
- * Why not auto-fetch from HoYoverse?
- *   HoYoverse's announcement API only returns permanent system notices for
- *   unauthenticated requests. Banner event data requires a user authkey (expires
- *   every 24h). The app handles that via the Sync modal + Cloudflare Worker.
+ * Portrait images: genshin.jmp.blue/characters/{slug}/portrait
  */
 
-import { writeFileSync } from 'fs';
+import { writeFileSync, existsSync, readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { createContext, Script } from 'vm';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_FILE = join(__dirname, '../../public/banners-current.json');
 
-// ──────────────────────────────────────────────────────────────────────────────
-// PATCH SCHEDULE — update this each patch
-// Dates are in ISO format (UTC+8 → UTC), banners last 3 weeks per phase.
-// ──────────────────────────────────────────────────────────────────────────────
-const BANNER_SCHEDULE = [
-  // Patch 5.7 — Phase 1
-  {
-    startDate: '2025-05-28',
-    endDate:   '2025-06-17',
-    character: { featured: 'Mavuika',     phase: 1, version: '5.7' },
-    weapon:    { phase: 1, version: '5.7' },
-  },
-  // Patch 5.7 — Phase 2
-  {
-    startDate: '2025-06-17',
-    endDate:   '2025-07-09',
-    character: { featured: 'Citlali',     phase: 2, version: '5.7' },
-    weapon:    { phase: 2, version: '5.7' },
-  },
-  // Patch 6.0 — Phase 1
-  {
-    startDate: '2025-07-09',
-    endDate:   '2025-07-30',
-    character: { featured: 'Unknown',     phase: 1, version: '6.0' },
-    weapon:    { phase: 1, version: '6.0' },
-  },
-  // Patch 6.0 — Phase 2
-  {
-    startDate: '2025-07-30',
-    endDate:   '2025-08-20',
-    character: { featured: 'Unknown',     phase: 2, version: '6.0' },
-    weapon:    { phase: 2, version: '6.0' },
-  },
-  // Patch 6.1 — Phase 1
-  {
-    startDate: '2025-08-20',
-    endDate:   '2025-09-10',
-    character: { featured: 'Unknown',     phase: 1, version: '6.1' },
-    weapon:    { phase: 1, version: '6.1' },
-  },
-  // Patch 6.1 — Phase 2
-  {
-    startDate: '2025-09-10',
-    endDate:   '2025-10-01',
-    character: { featured: 'Unknown',     phase: 2, version: '6.1' },
-    weapon:    { phase: 2, version: '6.1' },
-  },
-  // Patch 6.2 — Phase 1
-  {
-    startDate: '2025-10-01',
-    endDate:   '2025-10-22',
-    character: { featured: 'Unknown',     phase: 1, version: '6.2' },
-    weapon:    { phase: 1, version: '6.2' },
-  },
-  // Patch 6.2 — Phase 2
-  {
-    startDate: '2025-10-22',
-    endDate:   '2025-11-12',
-    character: { featured: 'Unknown',     phase: 2, version: '6.2' },
-    weapon:    { phase: 2, version: '6.2' },
-  },
-  // Patch 6.3 — Phase 1
-  {
-    startDate: '2025-11-12',
-    endDate:   '2025-12-03',
-    character: { featured: 'Unknown',     phase: 1, version: '6.3' },
-    weapon:    { phase: 1, version: '6.3' },
-  },
-  // Patch 6.3 — Phase 2
-  {
-    startDate: '2025-12-03',
-    endDate:   '2025-12-24',
-    character: { featured: 'Unknown',     phase: 2, version: '6.3' },
-    weapon:    { phase: 2, version: '6.3' },
-  },
-  // Patch 6.4 — Phase 1
-  {
-    startDate: '2025-12-24',
-    endDate:   '2026-01-14',
-    character: { featured: 'Unknown',     phase: 1, version: '6.4' },
-    weapon:    { phase: 1, version: '6.4' },
-  },
-  // Patch 6.4 — Phase 2
-  {
-    startDate: '2026-01-14',
-    endDate:   '2026-02-04',
-    character: { featured: 'Unknown',     phase: 2, version: '6.4' },
-    weapon:    { phase: 2, version: '6.4' },
-  },
-  // Patch 6.5 — Phase 1
-  {
-    startDate: '2026-02-04',
-    endDate:   '2026-02-25',
-    character: { featured: 'Unknown',     phase: 1, version: '6.5' },
-    weapon:    { phase: 1, version: '6.5' },
-  },
-  // Patch 6.5 — Phase 2
-  {
-    startDate: '2026-02-25',
-    endDate:   '2026-03-18',
-    character: { featured: 'Unknown',     phase: 2, version: '6.5' },
-    weapon:    { phase: 2, version: '6.5' },
-  },
-  // Patch 6.6 — Phase 1
-  {
-    startDate: '2026-03-18',
-    endDate:   '2026-04-08',
-    character: { featured: 'Unknown',     phase: 1, version: '6.6' },
-    weapon:    { phase: 1, version: '6.6' },
-  },
-  // Patch 6.6 — Phase 2
-  {
-    startDate: '2026-04-08',
-    endDate:   '2026-04-29',
-    character: { featured: 'Unknown',     phase: 2, version: '6.6' },
-    weapon:    { phase: 2, version: '6.6' },
-  },
-  // Patch 6.7 — Phase 1
-  {
-    startDate: '2026-04-29',
-    endDate:   '2026-05-20',
-    character: { featured: 'Unknown',     phase: 1, version: '6.7' },
-    weapon:    { phase: 1, version: '6.7' },
-  },
-  // Patch 6.7 — Phase 2
-  {
-    startDate: '2026-05-20',
-    endDate:   '2026-06-10',
-    character: { featured: 'Unknown',     phase: 2, version: '6.7' },
-    weapon:    { phase: 2, version: '6.7' },
-  },
-  // Patch 6.8 — Phase 1
-  {
-    startDate: '2026-06-10',
-    endDate:   '2026-07-01',
-    character: { featured: 'Unknown',     phase: 1, version: '6.8' },
-    weapon:    { phase: 1, version: '6.8' },
-  },
-  // Patch 6.8 — Phase 2
-  {
-    startDate: '2026-07-01',
-    endDate:   '2026-07-22',
-    character: { featured: 'Unknown',     phase: 2, version: '6.8' },
-    weapon:    { phase: 2, version: '6.8' },
-  },
-];
+const BANNERS_JS_URL =
+  'https://raw.githubusercontent.com/MadeBaruna/paimon-moe/main/src/data/banners.js';
+const PORTRAIT_BASE = 'https://genshin.jmp.blue/characters';
 
-function getCurrentPhase() {
-  const now = new Date();
-  for (const phase of BANNER_SCHEDULE) {
-    const start = new Date(phase.startDate + 'T11:00:00Z'); // 18:00 CST = 10:00 UTC
-    const end   = new Date(phase.endDate   + 'T10:59:59Z');
-    if (now >= start && now <= end) return phase;
-  }
-  // Fallback: find the next upcoming phase
-  const upcoming = BANNER_SCHEDULE.filter(p => new Date(p.startDate + 'T11:00:00Z') > now);
-  return upcoming.length ? upcoming[0] : null;
+// Convert a paimon.moe character slug to a display name
+// 'hu-tao' → 'Hu Tao', 'arataki-itto' → 'Arataki Itto'
+function slugToName(slug) {
+  return slug
+    .replace(/[_-]/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function main() {
-  const phase = getCurrentPhase();
+function portraitUrl(slug) {
+  return `${PORTRAIT_BASE}/${slug}/portrait`;
+}
 
-  if (!phase) {
-    console.warn('No matching phase in BANNER_SCHEDULE — update the schedule!');
-    writeFileSync(OUT_FILE, JSON.stringify({ fetchedAt: null, banners: {} }, null, 2), 'utf8');
+function cardUrl(slug) {
+  return `${PORTRAIT_BASE}/${slug}/card`;
+}
+
+function toISODate(timeStr) {
+  if (!timeStr || timeStr.startsWith('2200')) return null;
+  return timeStr.slice(0, 10);
+}
+
+async function fetchBannersJs() {
+  const resp = await fetch(BANNERS_JS_URL, {
+    headers: { 'User-Agent': 'wish-counter-banners-fetch/1.0' },
+    signal: AbortSignal.timeout(15000),
+  });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status} fetching banners.js`);
+  return resp.text();
+}
+
+function parseBannersJs(code) {
+  // The file uses "export const banners = {...};" — strip the export to make it vm-runnable
+  const scriptCode = code.replace(/^export\s+const\s+banners\s*=\s*/m, 'var banners = ');
+  const ctx = createContext({ banners: null });
+  new Script(scriptCode).runInContext(ctx);
+  return ctx.banners;
+}
+
+function findCurrentBanner(list) {
+  if (!Array.isArray(list)) return null;
+  const now = new Date();
+  return list.find((b) => {
+    if (!b.start || !b.end) return false;
+    const start = new Date(b.start.replace(' ', 'T'));
+    const end   = new Date(b.end.replace(' ', 'T'));
+    return now >= start && now <= end;
+  }) ?? null;
+}
+
+async function main() {
+  console.log('Fetching banner data from paimon.moe GitHub…');
+
+  let banners;
+  try {
+    const code = await fetchBannersJs();
+    banners = parseBannersJs(code);
+    console.log('  Parsed banners.js OK');
+  } catch (err) {
+    console.warn(`  Failed to fetch/parse banners.js: ${err.message}`);
+    console.warn('  Keeping existing banners-current.json.');
+    if (!existsSync(OUT_FILE)) {
+      writeFileSync(OUT_FILE, JSON.stringify({ fetchedAt: null, banners: {} }, null, 2), 'utf8');
+    }
     return;
   }
 
-  const banners = {
-    character: {
-      featured: phase.character.featured === 'Unknown' ? null : phase.character.featured,
-      endDate:  phase.endDate,
-      startDate: phase.startDate,
-      version:  phase.character.version,
-      phase:    phase.character.phase,
-    },
-    weapon: {
-      featuredWeapons: ['', ''],
-      endDate:  phase.endDate,
-      startDate: phase.startDate,
-      version:  phase.weapon.version,
-      phase:    phase.weapon.phase,
+  // ── Character banner ──────────────────────────────────────────────────────
+  const charBanner = findCurrentBanner(banners.characters);
+  let characterData = null;
+
+  if (charBanner) {
+    const slugs = charBanner.featured ?? [];
+    const primary   = slugs[0] ?? null;
+    const secondary = slugs[1] ?? null;
+
+    characterData = {
+      featured:        primary ? slugToName(primary) : null,
+      featuredSlug:    primary,
+      featuredPortrait: primary ? portraitUrl(primary) : null,
+      featuredCard:    primary ? cardUrl(primary) : null,
+      featured2:       secondary ? slugToName(secondary) : null,
+      featured2Slug:   secondary,
+      featured2Portrait: secondary ? portraitUrl(secondary) : null,
+      featured2Card:   secondary ? cardUrl(secondary) : null,
+      bannerName:      charBanner.name ?? null,
+      endDate:         toISODate(charBanner.end),
+      startDate:       toISODate(charBanner.start),
+      version:         charBanner.version ?? null,
+    };
+
+    console.log(`  → Character: ${characterData.featured ?? '?'}${secondary ? ` + ${characterData.featured2}` : ''} (until ${characterData.endDate})`);
+  } else {
+    console.warn('  No active character banner found — patch schedule may be missing in paimon.moe data');
+  }
+
+  // ── Weapon banner ─────────────────────────────────────────────────────────
+  const weaponBanner = findCurrentBanner(
+    (banners.weapons ?? []).filter((b) => !b.end?.startsWith('2200'))
+  );
+  let weaponData = null;
+
+  if (weaponBanner) {
+    const slugs = weaponBanner.featured ?? [];
+    weaponData = {
+      featuredWeapons: slugs.slice(0, 2).map(slugToName),
+      featuredWeaponSlugs: slugs.slice(0, 2),
+      endDate:   toISODate(weaponBanner.end),
+      startDate: toISODate(weaponBanner.start),
+      version:   weaponBanner.version ?? null,
+    };
+    console.log(`  → Weapon: ${weaponData.featuredWeapons.join(' + ') || '?'} (until ${weaponData.endDate})`);
+  }
+
+  // ── Chronicled banner ─────────────────────────────────────────────────────
+  const chronicledBanner = findCurrentBanner(banners.chronicled ?? []);
+  let chronicledData = null;
+
+  if (chronicledBanner) {
+    const slugs = chronicledBanner.featured ?? [];
+    const primary = slugs[0] ?? null;
+    chronicledData = {
+      featured:        primary ? slugToName(primary) : null,
+      featuredSlug:    primary,
+      featuredPortrait: primary ? portraitUrl(primary) : null,
+      bannerName:      chronicledBanner.name ?? null,
+      endDate:         toISODate(chronicledBanner.end),
+      startDate:       toISODate(chronicledBanner.start),
+      version:         chronicledBanner.version ?? null,
+    };
+    console.log(`  → Chronicled: ${chronicledData.featured ?? '?'} (until ${chronicledData.endDate})`);
+  }
+
+  const result = {
+    fetchedAt: new Date().toISOString(),
+    source: 'paimon.moe',
+    banners: {
+      character:  characterData,
+      weapon:     weaponData,
+      chronicled: chronicledData,
+      standard:   null,
     },
   };
 
-  if (banners.character.featured) {
-    console.log(`Current banner: ${banners.character.featured} (v${phase.character.version} phase ${phase.character.phase}) until ${phase.endDate}`);
-  } else {
-    console.log(`Current phase: v${phase.character.version} phase ${phase.character.phase} until ${phase.endDate} — featured character TBD`);
-  }
-
-  writeFileSync(OUT_FILE, JSON.stringify({ fetchedAt: new Date().toISOString(), banners }, null, 2), 'utf8');
+  writeFileSync(OUT_FILE, JSON.stringify(result, null, 2), 'utf8');
   console.log(`Wrote ${OUT_FILE}`);
 }
 
-main();
+main().catch((err) => {
+  console.error('fetch-banners.mjs error:', err);
+  process.exit(0); // Don't fail the build
+});

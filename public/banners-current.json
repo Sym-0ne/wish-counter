@@ -1,22 +1,35 @@
 {
-  "fetchedAt": "2026-06-16T22:09:26.308Z",
+  "fetchedAt": "2026-06-16T22:37:49.086Z",
+  "source": "paimon.moe",
   "banners": {
     "character": {
-      "featured": null,
-      "endDate": "2026-07-01",
-      "startDate": "2026-06-10",
-      "version": "6.8",
-      "phase": 1
+      "featured": "Lohen",
+      "featuredSlug": "lohen",
+      "featuredPortrait": "https://genshin.jmp.blue/characters/lohen/portrait",
+      "featuredCard": "https://genshin.jmp.blue/characters/lohen/card",
+      "featured2": "Mavuika",
+      "featured2Slug": "mavuika",
+      "featured2Portrait": "https://genshin.jmp.blue/characters/mavuika/portrait",
+      "featured2Card": "https://genshin.jmp.blue/characters/mavuika/card",
+      "bannerName": "Frostedge Nocturne",
+      "endDate": "2026-06-30",
+      "startDate": "2026-06-09",
+      "version": "6.6"
     },
     "weapon": {
       "featuredWeapons": [
-        "",
-        ""
+        "Disaster And Remorse",
+        "A Thousand Blazing Suns"
       ],
-      "endDate": "2026-07-01",
-      "startDate": "2026-06-10",
-      "version": "6.8",
-      "phase": 1
-    }
+      "featuredWeaponSlugs": [
+        "disaster_and_remorse",
+        "a_thousand_blazing_suns"
+      ],
+      "endDate": "2026-06-30",
+      "startDate": "2026-06-09",
+      "version": "6.6"
+    },
+    "chronicled": null,
+    "standard": null
   }
 }

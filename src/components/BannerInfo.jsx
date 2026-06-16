@@ -10,11 +10,13 @@ import {
 import { getCurrentBanners, isBannerStale } from '../utils/bannerFetch';
 
 // Loads and caches the portrait URL for a character or weapon name.
-function usePortrait(name, isWeapon) {
-  const [iconUrl, setIconUrl] = useState(null);
+// `directUrl` bypasses the lookup and uses the provided URL directly.
+function usePortrait(name, isWeapon, directUrl) {
+  const [iconUrl, setIconUrl] = useState(directUrl || null);
   const lastFetched = useRef('');
 
   useEffect(() => {
+    if (directUrl) { setIconUrl(directUrl); return; }
     if (!name || name === lastFetched.current) return;
     lastFetched.current = name;
     setIconUrl(null);
@@ -33,28 +35,27 @@ function usePortrait(name, isWeapon) {
     })();
 
     return () => { cancelled = true; };
-  }, [name, isWeapon]);
+  }, [name, isWeapon, directUrl]);
 
   return iconUrl;
 }
 
-function FeaturedField({ label, value, placeholder, isWeapon, onChange }) {
-  const portrait = usePortrait(value, isWeapon);
+function FeaturedField({ label, value, placeholder, isWeapon, directPortrait, onChange }) {
+  const portrait = usePortrait(value, isWeapon, directPortrait);
   const [imgError, setImgError] = useState(false);
 
   useEffect(() => setImgError(false), [portrait]);
 
   return (
     <div className="banner-info__field banner-info__field--featured">
-      {portrait && !imgError && (
+      {portrait && !imgError ? (
         <img
           src={portrait}
           alt={value}
           className="banner-info__portrait"
           onError={() => setImgError(true)}
         />
-      )}
-      {(!portrait || imgError) && (
+      ) : (
         <div className="banner-info__portrait banner-info__portrait--placeholder">
           <span>?</span>
         </div>
@@ -77,7 +78,7 @@ export function BannerInfo({ bannerKey, banner, onChange, onOpenSync }) {
   const m = banner.metadata;
   const [autoFilled, setAutoFilled] = useState(false);
 
-  // Auto-populate from banners-current.json when metadata is empty or stale.
+  // Auto-populate from banners-current.json when metadata is stale.
   useEffect(() => {
     let cancelled = false;
 
@@ -96,14 +97,18 @@ export function BannerInfo({ bannerKey, banner, onChange, onOpenSync }) {
         if (remote.featuredWeapons?.length) {
           patch.featuredWeapons = remote.featuredWeapons;
         }
-      } else if (remote.featured) {
-        patch.featured = remote.featured;
+      } else {
+        if (remote.featured)        patch.featured         = remote.featured;
+        if (remote.featuredPortrait) patch.featuredPortrait = remote.featuredPortrait;
+        if (remote.featured2)        patch.featured2        = remote.featured2;
+        if (remote.featured2Portrait) patch.featured2Portrait = remote.featured2Portrait;
       }
 
       if (remote.endDate)   patch.endDate   = remote.endDate;
       if (remote.startDate) patch.startDate  = remote.startDate;
       if (remote.version)   patch.version    = remote.version;
       if (remote.phase)     patch.phase      = remote.phase;
+      if (remote.bannerName) patch.bannerName = remote.bannerName;
 
       if (Object.keys(patch).length && !cancelled) {
         onChange(patch);
@@ -119,7 +124,7 @@ export function BannerInfo({ bannerKey, banner, onChange, onOpenSync }) {
 
   const featuredName = bannerKey === 'weapon'
     ? (m.featuredWeapons?.[0] || '')
-    : m.featured || '';
+    : (m.featured || '');
 
   const isStale = isBannerStale(m);
   const hasAnyData = featuredName || m.endDate;
@@ -128,11 +133,16 @@ export function BannerInfo({ bannerKey, banner, onChange, onOpenSync }) {
     <div className="card">
       <div className="card__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         {cfg.longLabel}
+        {m.bannerName && !isStale && (
+          <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontFamily: 'var(--font-body)', fontWeight: 400 }}>
+            — {m.bannerName}
+          </span>
+        )}
         {autoFilled && !isStale && (
           <span
             className="badge badge--success"
-            title="Données récupérées automatiquement"
-            style={{ fontSize: '0.65rem', fontFamily: 'var(--font-body)' }}
+            title="Données récupérées automatiquement depuis paimon.moe"
+            style={{ fontSize: '0.65rem', fontFamily: 'var(--font-body)', marginLeft: 'auto' }}
           >
             ↻ auto
           </span>
@@ -141,12 +151,12 @@ export function BannerInfo({ bannerKey, banner, onChange, onOpenSync }) {
           <button
             className="badge"
             style={{
-              fontSize: '0.65rem', fontFamily: 'var(--font-body)',
+              fontSize: '0.65rem', fontFamily: 'var(--font-body)', marginLeft: 'auto',
               background: 'color-mix(in srgb, var(--soft-pity) 20%, transparent)',
               color: 'var(--soft-pity)', border: '1px solid color-mix(in srgb, var(--soft-pity) 40%, transparent)',
               cursor: onOpenSync ? 'pointer' : 'default',
             }}
-            title="Données expirées — syncronise pour mettre à jour"
+            title="Données expirées — synchro pour mettre à jour"
             onClick={onOpenSync}
           >
             ↻ expiré
@@ -159,17 +169,19 @@ export function BannerInfo({ bannerKey, banner, onChange, onOpenSync }) {
           <FeaturedField
             label={bannerKey === 'weapon' ? 'Arme 1 featured' : 'Featured 5★'}
             value={featuredName}
-            placeholder={bannerKey === 'weapon' ? 'Mistsplitter…' : 'Néfer…'}
+            placeholder={bannerKey === 'weapon' ? 'Mistsplitter…' : 'Lohen…'}
             isWeapon={bannerKey === 'weapon'}
+            directPortrait={bannerKey !== 'weapon' ? m.featuredPortrait : null}
             onChange={(v) =>
               bannerKey === 'weapon'
                 ? update({ featuredWeapons: [v, m.featuredWeapons?.[1] || ''] })
-                : update({ featured: v })
+                : update({ featured: v, featuredPortrait: null })
             }
           />
         )}
 
-        {bannerKey === 'weapon' && (
+        {/* Second featured — character banner dual / weapon 2 */}
+        {bannerKey === 'weapon' ? (
           <FeaturedField
             label="Arme 2 featured"
             value={m.featuredWeapons?.[1] || ''}
@@ -179,14 +191,23 @@ export function BannerInfo({ bannerKey, banner, onChange, onOpenSync }) {
               update({ featuredWeapons: [m.featuredWeapons?.[0] || '', v] })
             }
           />
-        )}
+        ) : bannerKey === 'character' && m.featured2 ? (
+          <FeaturedField
+            label="Featured 5★ (2)"
+            value={m.featured2 || ''}
+            placeholder=""
+            isWeapon={false}
+            directPortrait={m.featured2Portrait || null}
+            onChange={(v) => update({ featured2: v, featured2Portrait: null })}
+          />
+        ) : null}
 
         <div className="banner-info__field">
           <label>Version</label>
           <input
             type="text"
             value={m.version || ''}
-            placeholder="6.5"
+            placeholder="6.6"
             onChange={(e) => update({ version: e.target.value })}
           />
         </div>
