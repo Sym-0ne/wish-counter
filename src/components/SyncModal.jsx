@@ -3,8 +3,9 @@ import { X, RefreshCw, CheckCircle, AlertCircle, Copy, Check, ChevronDown, Chevr
 import { syncAllBanners, countNewWishes } from '../utils/wishSync';
 import { fetchBannerInfoFromAuth } from '../utils/gachaInfo';
 
-// PowerShell one-liner — reads game log and opens the app with authkey pre-filled
-const PS_SCRIPT = `$url = Get-Content "$env:APPDATA\\..\\LocalLow\\miHoYo\\Genshin Impact\\output_log.txt" | Select-String "OnGetWebViewPageFinish:.*getGachaLog" | Select-Object -Last 1 | ForEach-Object { ($_ -split "OnGetWebViewPageFinish:")[1].Trim() }; if ($url) { Start-Process "https://sym-0ne.github.io/wish-counter/?authkey=$([uri]::EscapeDataString($url))" } else { Write-Host "Ouvre d'abord l'historique de voeux dans le jeu." }`;
+// PowerShell one-liner — reads the game log (page URL), builds the API URL, opens the app
+// Note: Genshin writes the wish-history PAGE URL to the log, not the API URL.
+const PS_SCRIPT = `$m = Get-Content "$env:APPDATA\\..\\LocalLow\\miHoYo\\Genshin Impact\\output_log.txt" -EA 0 | Select-String "OnGetWebViewPageFinish:.*authkey" | Select-Object -Last 1; if ($m) { $raw = ($m.Line -split "OnGetWebViewPageFinish:",2)[1].Trim(); $qs = ($raw -split "\\?",2)[1]; $h = if ($qs -match "region=cn_") { "public-operation-hk4e.hoyoverse.com" } else { "public-operation-hk4e-sg.hoyoverse.com" }; $api = "https://$h/gacha_info/api/getGachaLog?$qs"; Start-Process "https://sym-0ne.github.io/wish-counter/?authkey=$([uri]::EscapeDataString($api))" } else { Write-Host "Ouvre l'historique de voeux dans le jeu et laisse la page se charger." }`;
 
 function CopyButton({ text, label = 'Copier' }) {
   const [copied, setCopied] = useState(false);

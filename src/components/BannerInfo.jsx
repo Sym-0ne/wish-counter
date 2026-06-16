@@ -89,26 +89,31 @@ export function BannerInfo({ bannerKey, banner, onChange, onOpenSync }) {
       const remote = allBanners[bannerKey];
       if (!remote) return;
 
-      if (!isBannerStale(m)) return;
-
+      const isStale = isBannerStale(m);
       const patch = {};
 
       if (bannerKey === 'weapon') {
-        if (remote.featuredWeapons?.length) {
+        // Refresh weapon names only if stale
+        if (isStale && remote.featuredWeapons?.length) {
           patch.featuredWeapons = remote.featuredWeapons;
         }
       } else {
-        if (remote.featured)        patch.featured         = remote.featured;
-        if (remote.featuredPortrait) patch.featuredPortrait = remote.featuredPortrait;
-        if (remote.featured2)        patch.featured2        = remote.featured2;
-        if (remote.featured2Portrait) patch.featured2Portrait = remote.featured2Portrait;
+        // Portraits: always fill if missing (feature may have been added after data was set)
+        if (remote.featuredPortrait && !m.featuredPortrait)  patch.featuredPortrait  = remote.featuredPortrait;
+        if (remote.featured2Portrait && !m.featured2Portrait) patch.featured2Portrait = remote.featured2Portrait;
+        // Names: only refresh if stale
+        if (isStale && remote.featured)  patch.featured  = remote.featured;
+        if (isStale && remote.featured2) patch.featured2 = remote.featured2;
       }
 
-      if (remote.endDate)   patch.endDate   = remote.endDate;
-      if (remote.startDate) patch.startDate  = remote.startDate;
-      if (remote.version)   patch.version    = remote.version;
-      if (remote.phase)     patch.phase      = remote.phase;
-      if (remote.bannerName) patch.bannerName = remote.bannerName;
+      // Dates/version/name: only refresh if stale
+      if (isStale) {
+        if (remote.endDate)    patch.endDate    = remote.endDate;
+        if (remote.startDate)  patch.startDate  = remote.startDate;
+        if (remote.version)    patch.version    = remote.version;
+        if (remote.phase)      patch.phase      = remote.phase;
+        if (remote.bannerName) patch.bannerName = remote.bannerName;
+      }
 
       if (Object.keys(patch).length && !cancelled) {
         onChange(patch);

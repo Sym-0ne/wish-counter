@@ -8,6 +8,28 @@
  * pityRules.processHistory traite null comme "skip 50/50 update".
  */
 
+/**
+ * Normalise une URL authkey : accepte aussi bien l'URL de la page web de
+ * l'historique (webstatic / gs.hoyoverse.com) que l'URL API directe.
+ * Le log Genshin écrit l'URL de la page, pas l'URL API.
+ */
+export function normalizeAuthkeyUrl(rawUrl) {
+  try {
+    const u = new URL(rawUrl);
+    // Déjà une URL API HoYoverse → retour immédiat
+    if (u.hostname.startsWith('public-operation-hk4e')) return rawUrl;
+    // URL de page web → extraire les params et construire l'URL API
+    const region = u.searchParams.get('region') || '';
+    const isCN = region.startsWith('cn_');
+    const apiHost = isCN
+      ? 'public-operation-hk4e.hoyoverse.com'
+      : 'public-operation-hk4e-sg.hoyoverse.com';
+    return `https://${apiHost}/gacha_info/api/getGachaLog?${u.searchParams.toString()}`;
+  } catch {
+    return rawUrl;
+  }
+}
+
 // gacha_type API → bannerKey app
 const GACHA_TYPE_MAP = {
   '200': 'standard',
@@ -78,6 +100,7 @@ async function fetchPage(workerUrl, baseUrl, gachaType, endId) {
  * @returns {{ character: Wish[], weapon: Wish[], standard: Wish[], chronicled: Wish[] }}
  */
 export async function syncAllBanners(workerUrl, authkeyUrl, existingBanners, onProgress) {
+  const baseUrl = normalizeAuthkeyUrl(authkeyUrl);
   const results = { character: [], weapon: [], standard: [], chronicled: [] };
 
   for (const { gachaType, label } of SYNC_TYPES) {
@@ -92,7 +115,7 @@ export async function syncAllBanners(workerUrl, authkeyUrl, existingBanners, onP
     let stop = false;
 
     while (!stop) {
-      const page = await fetchPage(workerUrl, authkeyUrl, gachaType, endId);
+      const page = await fetchPage(workerUrl, baseUrl, gachaType, endId);
 
       if (!page.length) break;
 

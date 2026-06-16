@@ -3,6 +3,7 @@
  * Uses the authkey already stored for wish sync.
  * Proxied through the user's Cloudflare Worker (same as wish sync).
  */
+import { normalizeAuthkeyUrl } from './wishSync';
 
 const GACHA_TYPE_MAP = {
   '301': 'character',
@@ -33,7 +34,8 @@ function toDate(timeStr) {
  * @param {string} authkeyUrl Full wish-history URL (with authkey params)
  */
 export async function fetchBannerInfoFromAuth(workerUrl, authkeyUrl) {
-  const url = new URL(authkeyUrl);
+  // Normalize: accepts both the wish-history page URL and the API URL directly
+  const url = new URL(normalizeAuthkeyUrl(authkeyUrl));
 
   // Replace getGachaLog with getGachaInfoList, keep the auth params
   const infoUrl = new URL(url.toString());
