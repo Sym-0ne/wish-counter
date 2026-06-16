@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, RefreshCw, CheckCircle, AlertCircle, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { syncAllBanners, countNewWishes } from '../utils/wishSync';
+import { fetchBannerInfoFromAuth } from '../utils/gachaInfo';
 
 // PowerShell one-liner that reads the game log and opens this app with the authkey URL
 const PS_SCRIPT = `$url = Get-Content "$env:APPDATA\\..\\LocalLow\\miHoYo\\Genshin Impact\\output_log.txt" | Select-String "OnGetWebViewPageFinish:.*getGachaLog" | Select-Object -Last 1 | ForEach-Object { ($_ -split "OnGetWebViewPageFinish:")[1].Trim() }; if ($url) { Start-Process "https://sym-0ne.github.io/wish-counter/?authkey=$([uri]::EscapeDataString($url))" } else { Write-Host "Ouvre d'abord l'historique de voeux dans le jeu." }`;
@@ -41,7 +42,7 @@ function StepBadge({ n, active, done }) {
   );
 }
 
-export function SyncModal({ open, onClose, sync, banners, onImportSynced, onUpdateSyncConfig, initialAuthkeyUrl }) {
+export function SyncModal({ open, onClose, sync, banners, onImportSynced, onUpdateSyncConfig, onBannerInfoFetched, initialAuthkeyUrl }) {
   const [workerUrl, setWorkerUrl] = useState(sync.workerUrl || '');
   const [authkeyUrl, setAuthkeyUrl] = useState(initialAuthkeyUrl || sync.authkeyUrl || '');
   const [syncing, setSyncing] = useState(false);
@@ -86,13 +87,24 @@ export function SyncModal({ open, onClose, sync, banners, onImportSynced, onUpda
         setProgress,
       );
       const total = countNewWishes(groups);
+
+      // Fetch current banner names + dates with the same authkey
+      setProgress('Mise à jour des infos de bannière…');
+      let bannerNames = {};
+      try {
+        bannerNames = await fetchBannerInfoFromAuth(workerUrl.trim(), authkeyUrl.trim());
+        if (onBannerInfoFetched) onBannerInfoFetched(bannerNames);
+      } catch {
+        // Best-effort — don't fail the whole sync if banner info fetch fails
+      }
+
       onImportSynced(groups);
       onUpdateSyncConfig({
         workerUrl: workerUrl.trim(),
         authkeyUrl: authkeyUrl.trim(),
         lastSync: new Date().toISOString(),
       });
-      setResult({ ok: true, count: total });
+      setResult({ ok: true, count: total, bannerNames });
     } catch (err) {
       setResult({ ok: false, message: err.message });
     } finally {
@@ -231,10 +243,29 @@ export function SyncModal({ open, onClose, sync, banners, onImportSynced, onUpda
               <div
                 className={`sync-result sync-result--${result.ok ? 'ok' : 'error'}`}
               >
-                {result.ok
-                  ? <><CheckCircle size={15} /> {result.count} nouveau(x) vœu(x) importé(s) avec succès !</>
-                  : <><AlertCircle size={15} /> {result.message}</>
-                }
+                {result.ok ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <span><CheckCircle size={15} style={{ verticalAlign: 'middle', marginRight: 6 }} />{result.count} nouveau(x) vœu(x) importé(s)</span>
+                    {result.bannerNames?.character?.featured && (
+                      <span style={{ fontSize: '0.78rem', opacity: 0.85 }}>
+                        ★ Bannière personnage : <strong>{result.bannerNames.character.featured}</strong>
+                        {result.bannerNames.character.endDate ? ` (jusqu'au ${result.bannerNames.character.endDate})` : ''}
+                      </span>
+                    )}
+                    {result.bannerNames?.chronicled?.featured && (
+                      <span style={{ fontSize: '0.78rem', opacity: 0.85 }}>
+                        ★ Chroniques : <strong>{result.bannerNames.chronicled.featured}</strong>
+                      </span>
+                    )}
+                    {result.bannerNames && !result.bannerNames.character?.featured && (
+                      <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>
+                        Infos de bannière non disponibles (nom non extrait)
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <><AlertCircle size={15} /> {result.message}</>
+                )}
               </div>
             )}
           </div>

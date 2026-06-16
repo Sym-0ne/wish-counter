@@ -126,6 +126,7 @@ export default function App({ profileId = 'default', profileProps = {} }) {
               onChange={(metadata) =>
                 dispatch(A.updateBannerMetadata(activeKey, metadata))
               }
+              onOpenSync={() => setSyncOpen(true)}
             />
             <PityCard
               banner={activeBanner}
@@ -203,6 +204,13 @@ export default function App({ profileId = 'default', profileProps = {} }) {
           dispatch(A.importSyncedWishes(groups));
         }}
         onUpdateSyncConfig={(cfg) => dispatch(A.updateSyncConfig(cfg))}
+        onBannerInfoFetched={(bannerInfo) => {
+          for (const [key, meta] of Object.entries(bannerInfo)) {
+            if (meta && state.banners[key]) {
+              dispatch(A.updateBannerMetadata(key, meta));
+            }
+          }
+        }}
       />
 
       <Settings

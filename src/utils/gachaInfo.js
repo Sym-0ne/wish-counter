@@ -13,8 +13,8 @@ const GACHA_TYPE_MAP = {
 };
 
 function extractCharacter(name) {
-  // "Character Event Wish - Hu Tao: Targeted..."
-  const m = (name || '').match(/[-–]\s+([A-Za-zÀ-ɏ][A-Za-zÀ-ɏ\s'`-]{1,24}?)\s*(?::|$)/);
+  // "Character Event Wish - Hu Tao: Targeted..." or "— Hu Tao : ..." (FR em-dash)
+  const m = (name || '').match(/[-–—]\s*([A-Za-zÀ-ɏ][A-Za-zÀ-ɏ\s'`\-]{1,24}?)\s*(?::|$)/);
   return m ? m[1].trim() : null;
 }
 

@@ -1,9 +1,22 @@
 {
-  "fetchedAt": "2026-06-16T08:51:25.984Z",
+  "fetchedAt": "2026-06-16T22:09:26.308Z",
   "banners": {
-    "character": null,
-    "weapon": null,
-    "chronicled": null,
-    "standard": null
+    "character": {
+      "featured": null,
+      "endDate": "2026-07-01",
+      "startDate": "2026-06-10",
+      "version": "6.8",
+      "phase": 1
+    },
+    "weapon": {
+      "featuredWeapons": [
+        "",
+        ""
+      ],
+      "endDate": "2026-07-01",
+      "startDate": "2026-06-10",
+      "version": "6.8",
+      "phase": 1
+    }
   }
 }

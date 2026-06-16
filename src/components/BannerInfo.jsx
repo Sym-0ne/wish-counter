@@ -72,7 +72,7 @@ function FeaturedField({ label, value, placeholder, isWeapon, onChange }) {
   );
 }
 
-export function BannerInfo({ bannerKey, banner, onChange }) {
+export function BannerInfo({ bannerKey, banner, onChange, onOpenSync }) {
   const cfg = BANNER_CONFIG[bannerKey];
   const m = banner.metadata;
   const [autoFilled, setAutoFilled] = useState(false);
@@ -88,10 +88,7 @@ export function BannerInfo({ bannerKey, banner, onChange }) {
       const remote = allBanners[bannerKey];
       if (!remote) return;
 
-      // Only auto-fill if metadata is empty or the stored end date is past
-      const shouldFill = isBannerStale(m);
-
-      if (!shouldFill) return;
+      if (!isBannerStale(m)) return;
 
       const patch = {};
 
@@ -103,7 +100,10 @@ export function BannerInfo({ bannerKey, banner, onChange }) {
         patch.featured = remote.featured;
       }
 
-      if (remote.endDate) patch.endDate = remote.endDate;
+      if (remote.endDate)   patch.endDate   = remote.endDate;
+      if (remote.startDate) patch.startDate  = remote.startDate;
+      if (remote.version)   patch.version    = remote.version;
+      if (remote.phase)     patch.phase      = remote.phase;
 
       if (Object.keys(patch).length && !cancelled) {
         onChange(patch);
@@ -121,11 +121,14 @@ export function BannerInfo({ bannerKey, banner, onChange }) {
     ? (m.featuredWeapons?.[0] || '')
     : m.featured || '';
 
+  const isStale = isBannerStale(m);
+  const hasAnyData = featuredName || m.endDate;
+
   return (
     <div className="card">
       <div className="card__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         {cfg.longLabel}
-        {autoFilled && (
+        {autoFilled && !isStale && (
           <span
             className="badge badge--success"
             title="Données récupérées automatiquement"
@@ -133,6 +136,21 @@ export function BannerInfo({ bannerKey, banner, onChange }) {
           >
             ↻ auto
           </span>
+        )}
+        {isStale && hasAnyData && (
+          <button
+            className="badge"
+            style={{
+              fontSize: '0.65rem', fontFamily: 'var(--font-body)',
+              background: 'color-mix(in srgb, var(--soft-pity) 20%, transparent)',
+              color: 'var(--soft-pity)', border: '1px solid color-mix(in srgb, var(--soft-pity) 40%, transparent)',
+              cursor: onOpenSync ? 'pointer' : 'default',
+            }}
+            title="Données expirées — syncronise pour mettre à jour"
+            onClick={onOpenSync}
+          >
+            ↻ expiré
+          </button>
         )}
       </div>
 
