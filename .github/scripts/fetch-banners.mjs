@@ -5,12 +5,10 @@
  * Writes to public/banners-current.json — the app reads this at runtime.
  *
  * Data source: github.com/MadeBaruna/paimon-moe (src/data/banners.js)
- * Updated by the paimon.moe community each patch.
- *
- * Portrait images: genshin.jmp.blue/characters/{slug}/portrait
+ * Portrait images: enka.network (always up-to-date with game files), fallback genshin.jmp.blue
  */
 
-import { writeFileSync, existsSync, readFileSync } from 'fs';
+import { writeFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { createContext, Script } from 'vm';
@@ -20,22 +18,48 @@ const OUT_FILE = join(__dirname, '../../public/banners-current.json');
 
 const BANNERS_JS_URL =
   'https://raw.githubusercontent.com/MadeBaruna/paimon-moe/main/src/data/banners.js';
-const PORTRAIT_BASE = 'https://genshin.jmp.blue/characters';
 
-// Convert a paimon.moe character slug to a display name
-// 'hu-tao' → 'Hu Tao', 'arataki-itto' → 'Arataki Itto'
+// enka.network uses PascalCase internal names from game files — most up-to-date source
+const ENKA_BASE = 'https://enka.network/ui';
+// genshin.jmp.blue — fallback (stopped around v4.7, ~92 characters)
+const JMP_BASE = 'https://genshin.jmp.blue/characters';
+
+/** 'hu-tao' → 'HuTao', 'mavuika' → 'Mavuika' (enka.network PascalCase) */
+function slugToEnkaName(slug) {
+  return slug
+    .replace(/[_-](\w)/g, (_, c) => c.toUpperCase())
+    .replace(/^\w/, (c) => c.toUpperCase());
+}
+
+/** 'hu-tao' → 'Hu Tao', 'arataki-itto' → 'Arataki Itto' */
 function slugToName(slug) {
   return slug
     .replace(/[_-]/g, ' ')
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function portraitUrl(slug) {
-  return `${PORTRAIT_BASE}/${slug}/portrait`;
+async function checkUrl(url) {
+  try {
+    const resp = await fetch(url, { method: 'HEAD', signal: AbortSignal.timeout(6000) });
+    return resp.ok && resp.headers.get('content-type')?.startsWith('image/');
+  } catch {
+    return false;
+  }
 }
 
-function cardUrl(slug) {
-  return `${PORTRAIT_BASE}/${slug}/card`;
+/**
+ * Resolves a portrait URL for a character slug.
+ * Tries enka.network first (always current), falls back to genshin.jmp.blue.
+ */
+async function resolvePortrait(slug) {
+  if (!slug) return null;
+  const enkaUrl = `${ENKA_BASE}/UI_AvatarIcon_${slugToEnkaName(slug)}.png`;
+  if (await checkUrl(enkaUrl)) return enkaUrl;
+  // Fallback for older characters (enka naming edge cases)
+  const jmpUrl = `${JMP_BASE}/${slug}/portrait`;
+  if (await checkUrl(jmpUrl)) return jmpUrl;
+  console.warn(`  ⚠ No portrait found for ${slug} (tried enka + jmp.blue)`);
+  return null;
 }
 
 function toISODate(timeStr) {
@@ -53,7 +77,6 @@ async function fetchBannersJs() {
 }
 
 function parseBannersJs(code) {
-  // The file uses "export const banners = {...};" — strip the export to make it vm-runnable
   const scriptCode = code.replace(/^export\s+const\s+banners\s*=\s*/m, 'var banners = ');
   const ctx = createContext({ banners: null });
   new Script(scriptCode).runInContext(ctx);
@@ -97,22 +120,27 @@ async function main() {
     const primary   = slugs[0] ?? null;
     const secondary = slugs[1] ?? null;
 
+    console.log(`  Resolving portraits for: ${[primary, secondary].filter(Boolean).join(', ')}…`);
+    const [featuredPortrait, featured2Portrait] = await Promise.all([
+      resolvePortrait(primary),
+      resolvePortrait(secondary),
+    ]);
+
     characterData = {
-      featured:        primary ? slugToName(primary) : null,
-      featuredSlug:    primary,
-      featuredPortrait: primary ? portraitUrl(primary) : null,
-      featuredCard:    primary ? cardUrl(primary) : null,
-      featured2:       secondary ? slugToName(secondary) : null,
-      featured2Slug:   secondary,
-      featured2Portrait: secondary ? portraitUrl(secondary) : null,
-      featured2Card:   secondary ? cardUrl(secondary) : null,
-      bannerName:      charBanner.name ?? null,
-      endDate:         toISODate(charBanner.end),
-      startDate:       toISODate(charBanner.start),
-      version:         charBanner.version ?? null,
+      featured:          primary ? slugToName(primary) : null,
+      featuredSlug:      primary,
+      featuredPortrait,
+      featured2:         secondary ? slugToName(secondary) : null,
+      featured2Slug:     secondary,
+      featured2Portrait,
+      bannerName:        charBanner.name ?? null,
+      endDate:           toISODate(charBanner.end),
+      startDate:         toISODate(charBanner.start),
+      version:           charBanner.version ?? null,
     };
 
     console.log(`  → Character: ${characterData.featured ?? '?'}${secondary ? ` + ${characterData.featured2}` : ''} (until ${characterData.endDate})`);
+    console.log(`  → Portraits: ${featuredPortrait ? '✓' : '✗'} / ${featured2Portrait ? '✓' : '✗'}`);
   } else {
     console.warn('  No active character banner found — patch schedule may be missing in paimon.moe data');
   }
@@ -126,7 +154,7 @@ async function main() {
   if (weaponBanner) {
     const slugs = weaponBanner.featured ?? [];
     weaponData = {
-      featuredWeapons: slugs.slice(0, 2).map(slugToName),
+      featuredWeapons:     slugs.slice(0, 2).map(slugToName),
       featuredWeaponSlugs: slugs.slice(0, 2),
       endDate:   toISODate(weaponBanner.end),
       startDate: toISODate(weaponBanner.start),
@@ -142,10 +170,11 @@ async function main() {
   if (chronicledBanner) {
     const slugs = chronicledBanner.featured ?? [];
     const primary = slugs[0] ?? null;
+    const featuredPortrait = await resolvePortrait(primary);
     chronicledData = {
       featured:        primary ? slugToName(primary) : null,
       featuredSlug:    primary,
-      featuredPortrait: primary ? portraitUrl(primary) : null,
+      featuredPortrait,
       bannerName:      chronicledBanner.name ?? null,
       endDate:         toISODate(chronicledBanner.end),
       startDate:       toISODate(chronicledBanner.start),

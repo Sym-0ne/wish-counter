@@ -35,11 +35,11 @@ export default function App({ profileId = 'default', profileProps = {} }) {
       const params = new URLSearchParams(window.location.search);
       const raw = params.get('authkey');
       if (raw) {
-        const decoded = decodeURIComponent(raw);
-        // Clean the URL immediately so the authkey isn't sitting in browser history
+        // URLSearchParams.get() already decodes once — do NOT call decodeURIComponent again.
+        // A second decode would turn %2B → + in the authkey value (base64), corrupting it.
         const clean = window.location.pathname + window.location.hash;
         window.history.replaceState(null, '', clean);
-        return decoded;
+        return raw;
       }
     } catch { /* ignore */ }
     return '';

@@ -1,16 +1,14 @@
 {
-  "fetchedAt": "2026-06-16T22:37:49.086Z",
+  "fetchedAt": "2026-06-16T23:51:10.250Z",
   "source": "paimon.moe",
   "banners": {
     "character": {
       "featured": "Lohen",
       "featuredSlug": "lohen",
-      "featuredPortrait": "https://genshin.jmp.blue/characters/lohen/portrait",
-      "featuredCard": "https://genshin.jmp.blue/characters/lohen/card",
+      "featuredPortrait": "https://enka.network/ui/UI_AvatarIcon_Lohen.png",
       "featured2": "Mavuika",
       "featured2Slug": "mavuika",
-      "featured2Portrait": "https://genshin.jmp.blue/characters/mavuika/portrait",
-      "featured2Card": "https://genshin.jmp.blue/characters/mavuika/card",
+      "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Mavuika.png",
       "bannerName": "Frostedge Nocturne",
       "endDate": "2026-06-30",
       "startDate": "2026-06-09",
