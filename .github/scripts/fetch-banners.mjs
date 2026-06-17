@@ -352,7 +352,7 @@ async function main() {
   }
 
   function processAllCharPhases(list) {
-    return (list ?? [])
+    const entries = (list ?? [])
       .filter((b) => b.start && b.end && !b.end.startsWith('2200'))
       .map((b) => {
         const slugs = b.featured ?? [];
@@ -369,8 +369,22 @@ async function main() {
           featured2Portrait: p2 ? `${ENKA_BASE}/UI_AvatarIcon_${slugToEnkaName(p2)}.png` : null,
           version:    b.version ?? null,
           bannerName: b.name   ?? null,
+          phase:      null, // assigned below
         };
       });
+
+    // Assign phase numbers: within each version, sorted by startMs → 1, 2, (3)
+    const byVersion = {};
+    for (const e of entries) {
+      const v = e.version ?? 'unknown';
+      (byVersion[v] ??= []).push(e);
+    }
+    for (const group of Object.values(byVersion)) {
+      group.sort((a, b) => a.startMs - b.startMs);
+      group.forEach((e, i) => { e.phase = i + 1; });
+    }
+
+    return entries;
   }
 
   function processAllWeaponPhases(list) {
@@ -397,11 +411,25 @@ async function main() {
       });
   }
 
+  const allCharPhases   = processAllCharPhases(banners.characters);
+  const allWeapPhases   = processAllWeaponPhases(banners.weapons);
+  const allChronPhases  = processAllCharPhases(banners.chronicled ?? []);
+
+  // Patch current banner with auto-detected phase
+  if (charBanner && characterData) {
+    const currentMs = toMs(charBanner.start);
+    const match = allCharPhases.find((e) => Math.abs(e.startMs - currentMs) < 60000);
+    if (match?.phase) {
+      characterData.phase = match.phase;
+      console.log(`  → Current character banner: phase ${match.phase}`);
+    }
+  }
+
   const history = {
     fetchedAt: new Date().toISOString(),
-    character:  processAllCharPhases(banners.characters),
-    weapon:     processAllWeaponPhases(banners.weapons),
-    chronicled: processAllCharPhases(banners.chronicled ?? []),
+    character:  allCharPhases,
+    weapon:     allWeapPhases,
+    chronicled: allChronPhases,
   };
   writeFileSync(HIST_FILE, JSON.stringify(history, null, 2), 'utf8');
   console.log(`Wrote ${HIST_FILE} (${history.character.length} char + ${history.weapon.length} weapon + ${history.chronicled.length} chronicled phases)`);

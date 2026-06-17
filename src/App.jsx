@@ -4,7 +4,7 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useLuckScore, useStreak, useNameSuggestions } from './hooks/useDerivedStats';
 import * as A from './store/actions';
 import { fetchBannerInfoFromAuth } from './utils/gachaInfo';
-import { isBannerStale } from './utils/bannerFetch';
+import { isBannerStale, getCurrentBanners } from './utils/bannerFetch';
 
 import { Header } from './components/Header';
 import { BannerInfo } from './components/BannerInfo';
@@ -21,6 +21,7 @@ import { BannerHistory } from './components/BannerHistory';
 import { WishlistTab } from './components/WishlistTab';
 import { PrimoTracker } from './components/PrimoTracker';
 import { UpcomingBanners } from './components/UpcomingBanners';
+import { AllBannersTimeline } from './components/AllBannersTimeline';
 
 export default function App({ profileId = 'default', profileProps = {} }) {
   const [state, dispatch] = usePersistedReducer(profileId);
@@ -59,6 +60,17 @@ export default function App({ profileId = 'default', profileProps = {} }) {
   useEffect(() => {
     if (initialAuthkeyUrl) setSyncOpen(true);
   }, [initialAuthkeyUrl]);
+
+  // Auto-sync current game version from banners-current.json on mount
+  useEffect(() => {
+    getCurrentBanners().then((data) => {
+      const version = data?.character?.version ?? data?.weapon?.version;
+      if (version && version !== state.version) {
+        dispatch(A.setVersion(version));
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // run once on mount only
 
   // Auto-fetch banner info (featured character, end date) via the same authkey used for
   // wish sync. Runs on mount and after every successful wish sync (lastSync update).
@@ -121,7 +133,7 @@ export default function App({ profileId = 'default', profileProps = {} }) {
       />
 
       {view === 'banner' && (
-        <main className="app__main">
+        <main className="app__main app__main--banner">
           <div className="app__col">
             <BannerInfo
               bannerKey={activeKey}
@@ -166,6 +178,9 @@ export default function App({ profileId = 'default', profileProps = {} }) {
               banner={activeBanner}
               onChange={(wishlist) => dispatch(A.updateWishlist(activeKey, wishlist))}
             />
+          </div>
+          <div className="app__col app__col--full">
+            <AllBannersTimeline />
           </div>
         </main>
       )}
