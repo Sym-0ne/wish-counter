@@ -7,7 +7,7 @@
 #   3. Ouvre PowerShell et execute ce script (ou colle le one-liner ci-dessous).
 #
 # ONE-LINER (copier-coller directement dans PowerShell) :
-#   $log="$env:APPDATA\..\LocalLow\miHoYo\Genshin Impact\output_log.txt"; $m=Get-Content $log -EA 0|Select-String "web:.*url:.*authkey|OnGetWebViewPageFinish:.*authkey"|Select-Object -Last 1; if($m){$raw=if($m.Line -match "url: (https://\S+)"){$matches[1]}else{($m.Line -split "OnGetWebViewPageFinish:",2)[1].Trim()}; $clean=($raw -split "#")[0]; $qs=($clean -split "\?",2)[1]; $h=if($qs -match "region=cn_"){"public-operation-hk4e.hoyoverse.com"}else{"public-operation-hk4e-sg.hoyoverse.com"}; $api="https://$h/gacha_info/api/getGachaLog?$qs"; $url="https://sym-0ne.github.io/wish-counter/?authkey=$([uri]::EscapeDataString($api))"; Set-Clipboard $url; Write-Host "Lien copie ! Colle-le dans ton navigateur."}else{Write-Host "Ouvre l'historique de voeux dans le jeu et laisse la page se charger."}
+#   $log="$env:APPDATA\..\LocalLow\miHoYo\Genshin Impact\output_log.txt"; $m=Get-Content $log -EA 0|Select-String "web:.*url:.*authkey|OnGetWebViewPageFinish:.*authkey"|Select-Object -Last 1; if($m){$raw=if($m.Line -match "url: (https://\S+)"){$matches[1]}else{($m.Line -split "OnGetWebViewPageFinish:",2)[1].Trim()}; $clean=($raw -split "#")[0]; $qs=($clean -split "\?",2)[1]; $h=if($qs -match "region=cn_"){"public-operation-hk4e.hoyoverse.com"}else{"public-operation-hk4e-sg.hoyoverse.com"}; $api="https://$h/gacha_info/api/getGachaLog?$qs"; Set-Clipboard $api; Write-Host "URL authkey copiee ! Colle-la dans le champ de la fenetre de sync."}else{Write-Host "Ouvre l'historique de voeux dans le jeu et laisse la page se charger."}
 
 $logPath = "$env:APPDATA\..\LocalLow\miHoYo\Genshin Impact\output_log.txt"
 $appUrl  = "https://sym-0ne.github.io/wish-counter/"
@@ -75,11 +75,12 @@ Write-Host ""
 $encoded = [uri]::EscapeDataString($apiUrl)
 $fullUrl  = "${appUrl}?authkey=${encoded}"
 
-Set-Clipboard $fullUrl
+Set-Clipboard $apiUrl
 
-Write-Host "Lien copie dans le presse-papiers !" -ForegroundColor Green
+Write-Host "URL authkey copiee dans le presse-papiers !" -ForegroundColor Green
 Write-Host ""
-Write-Host $fullUrl -ForegroundColor Cyan
+Write-Host $apiUrl -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Colle-le dans ton navigateur (Ctrl+V) pour ouvrir le Wish Tracker." -ForegroundColor Yellow
+Write-Host "Va sur https://sym-0ne.github.io/wish-counter/" -ForegroundColor Yellow
+Write-Host "Ouvre la modal de synchronisation, puis colle l'URL dans le champ (Ctrl+V)." -ForegroundColor Yellow
 Read-Host "Appuie sur Entree pour quitter"

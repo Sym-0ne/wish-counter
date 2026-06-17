@@ -6,7 +6,7 @@ import { fetchBannerInfoFromAuth } from '../utils/gachaInfo';
 // PowerShell one-liner — reads the game log (page URL), builds the API URL, opens the app
 // Genshin v6.6+ logs the URL as: "web: N url: https://gs.hoyoverse.com/...?authkey=..."
 // Older versions used "OnGetWebViewPageFinish:" — both patterns are searched.
-const PS_SCRIPT = `$log="$env:APPDATA\\..\\LocalLow\\miHoYo\\Genshin Impact\\output_log.txt"; $m=Get-Content $log -EA 0|Select-String "web:.*url:.*authkey|OnGetWebViewPageFinish:.*authkey"|Select-Object -Last 1; if($m){$raw=if($m.Line -match "url: (https://\\S+)"){$matches[1]}else{($m.Line -split "OnGetWebViewPageFinish:",2)[1].Trim()}; $clean=($raw -split "#")[0]; $qs=($clean -split "\\?",2)[1]; $h=if($qs -match "region=cn_"){"public-operation-hk4e.hoyoverse.com"}else{"public-operation-hk4e-sg.hoyoverse.com"}; $api="https://$h/gacha_info/api/getGachaLog?$qs"; $url="https://sym-0ne.github.io/wish-counter/?authkey=$([uri]::EscapeDataString($api))"; Set-Clipboard $url; Write-Host "Lien copie ! Colle-le dans ton navigateur."}else{Write-Host "Ouvre l'historique de voeux dans le jeu et laisse la page se charger."}`;
+const PS_SCRIPT = `$log="$env:APPDATA\\..\\LocalLow\\miHoYo\\Genshin Impact\\output_log.txt"; $m=Get-Content $log -EA 0|Select-String "web:.*url:.*authkey|OnGetWebViewPageFinish:.*authkey"|Select-Object -Last 1; if($m){$raw=if($m.Line -match "url: (https://\\S+)"){$matches[1]}else{($m.Line -split "OnGetWebViewPageFinish:",2)[1].Trim()}; $clean=($raw -split "#")[0]; $qs=($clean -split "\\?",2)[1]; $h=if($qs -match "region=cn_"){"public-operation-hk4e.hoyoverse.com"}else{"public-operation-hk4e-sg.hoyoverse.com"}; $api="https://$h/gacha_info/api/getGachaLog?$qs"; Set-Clipboard $api; Write-Host "URL authkey copiee ! Colle-la dans le champ de la fenetre de sync."}else{Write-Host "Ouvre l'historique de voeux dans le jeu et laisse la page se charger."}`;
 
 function CopyButton({ text, label = 'Copier' }) {
   const [copied, setCopied] = useState(false);
@@ -146,14 +146,14 @@ export function SyncModal({ open, onClose, sync, banners, onImportSynced, onUpda
             </div>
             <div className="sync-step__body">
               <p className="sync-step__desc">
-                Colle cette commande dans <strong>PowerShell</strong> — elle lit le log du jeu et ouvre cette page automatiquement avec l'authkey :
+                Colle cette commande dans <strong>PowerShell</strong> — elle lit le log du jeu et copie l'URL authkey dans ton presse-papiers :
               </p>
               <div className="sync-code-block">
                 <code>{PS_SCRIPT}</code>
                 <CopyButton text={PS_SCRIPT} />
               </div>
               <p className="sync-step__desc" style={{ marginTop: 8 }}>
-                Ou colle l'URL manuellement ci-dessous (commence par <code>https://public-operation-hk4e</code>) :
+                Puis colle l'URL dans le champ ci-dessous (<kbd>Ctrl+V</kbd>) — elle commence par <code>https://public-operation-hk4e</code> :
               </p>
               <div className="modal__field">
                 <input
