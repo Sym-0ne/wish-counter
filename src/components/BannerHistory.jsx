@@ -83,6 +83,11 @@ function usePullGroups(banners, filterKey, bannerHistory) {
       }
     }
 
+    // Trier les 5★ dans chaque groupe du plus récent au plus ancien
+    for (const g of Object.values(byGroup)) {
+      g.fiveStars.sort((a, b) => b.timestamp - a.timestamp);
+    }
+
     return Object.values(byGroup)
       .filter((g) => g.fiveStars.length > 0)
       .sort((a, b) => b.lastTs - a.lastTs);

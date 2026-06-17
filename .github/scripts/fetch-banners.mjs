@@ -199,6 +199,14 @@ async function main() {
   console.log(`Wrote ${OUT_FILE}`);
 
   // ── History file (all phases, for BannerHistory timestamp-matching) ───────
+  // Paimon.moe stocke les dates en UTC+8 sans suffixe timezone.
+  // On l'ajoute explicitement pour que new Date() les interprète correctement.
+  function toMs(str) {
+    if (!str) return 0;
+    const s = str.replace(' ', 'T');
+    return new Date(s.includes('+') || s.endsWith('Z') ? s : s + '+08:00').getTime();
+  }
+
   function processAllCharPhases(list) {
     return (list ?? [])
       .filter((b) => b.start && b.end && !b.end.startsWith('2200'))
@@ -207,8 +215,8 @@ async function main() {
         const p1 = slugs[0] ?? null;
         const p2 = slugs[1] ?? null;
         return {
-          startMs: new Date(b.start.replace(' ', 'T')).getTime(),
-          endMs:   new Date(b.end.replace(' ', 'T')).getTime(),
+          startMs: toMs(b.start),
+          endMs:   toMs(b.end),
           featured:          p1 ? slugToName(p1) : null,
           featuredSlug:      p1,
           featuredPortrait:  p1 ? `${ENKA_BASE}/UI_AvatarIcon_${slugToEnkaName(p1)}.png` : null,
@@ -229,8 +237,8 @@ async function main() {
         const w1 = slugs[0] ?? null;
         const w2 = slugs[1] ?? null;
         return {
-          startMs: new Date(b.start.replace(' ', 'T')).getTime(),
-          endMs:   new Date(b.end.replace(' ', 'T')).getTime(),
+          startMs: toMs(b.start),
+          endMs:   toMs(b.end),
           featured:      w1 ? slugToName(w1) : null,
           featuredSlug:  w1,
           featured2:     w2 ? slugToName(w2) : null,

@@ -63,8 +63,8 @@ const WEAPON_ITEM_TYPES = new Set([
 ]);
 
 function parseApiWish(apiWish, bannerKey) {
-  // "2026-05-15 14:23:45" → timestamp ms
-  const ts = new Date(apiWish.time.replace(' ', 'T')).getTime();
+  // "2026-05-15 14:23:45" → timestamp ms (UTC+8 — serveur Genshin Impact)
+  const ts = new Date(apiWish.time.replace(' ', 'T') + '+08:00').getTime();
   return {
     id: apiWish.id,
     timestamp: isNaN(ts) ? Date.now() : ts,
