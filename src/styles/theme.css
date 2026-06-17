@@ -863,6 +863,30 @@ h1, h2, h3, h4 {
 .prob__big-label { color: var(--muted); font-size: 0.76rem; margin-top: 0.3rem; }
 .prob__detail { font-size: 0.77rem; color: var(--muted); margin-top: 0.5rem; line-height: 1.6; }
 
+/* ========== PULL COST ESTIMATOR ========== */
+.pce-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 0.82rem; margin-top: 0.5rem;
+}
+.pce-table th {
+  text-align: right; color: var(--muted);
+  font-size: 0.7rem; text-transform: uppercase;
+  letter-spacing: 0.04em; padding: 0 6px 4px;
+  font-weight: 500;
+}
+.pce-table th:first-child { text-align: left; }
+.pce-table td {
+  text-align: right; padding: 5px 6px;
+  border-top: 1px solid rgba(180, 148, 64, 0.07);
+}
+.pce-table td:first-child { text-align: left; }
+.pce-label { color: var(--muted); font-size: 0.75rem; }
+.pce-row--highlight td {
+  background: rgba(200, 168, 75, 0.06);
+  color: var(--gold);
+  font-weight: 600;
+}
+
 /* ========== STATS PANEL ========== */
 .stats-grid {
   display: grid;

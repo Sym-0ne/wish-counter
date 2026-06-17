@@ -20,6 +20,7 @@ import { SyncModal } from './components/SyncModal';
 import { BannerHistory } from './components/BannerHistory';
 import { WishlistTab } from './components/WishlistTab';
 import { PrimoTracker } from './components/PrimoTracker';
+import { PullCostEstimator } from './components/PullCostEstimator';
 import { UpcomingBanners } from './components/UpcomingBanners';
 import { AllBannersTimeline } from './components/AllBannersTimeline';
 
@@ -173,6 +174,7 @@ export default function App({ profileId = 'default', profileProps = {} }) {
 
           <div className="app__col">
             <ProbabilityCalc banner={activeBanner} bannerKey={activeKey} />
+            <PullCostEstimator banner={activeBanner} bannerKey={activeKey} />
             <PrimoTracker
               primoTracker={state.primoTracker}
               banner={activeBanner}
