@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { CalendarClock, Plus, Pencil, Trash2, X, Check, Github, Loader } from 'lucide-react';
-import { getUpcomingBanners } from '../utils/bannerFetch';
+import { getUpcomingBanners, bustUpcomingCache } from '../utils/bannerFetch';
+import { bustAllBannersCache } from '../utils/allBannersFetch';
 import { writeViaWorker, nameToPortrait } from '../utils/githubUpcoming';
 
 const BANNER_LABEL = {
@@ -156,6 +157,13 @@ export function UpcomingBanners({ workerUrl, upcomingUser, upcomingPassword }) {
       const manual = updatedEntries.filter((e) => !(e.source === 'paimon.moe' && e.confidence === 'officiel'));
       await writeViaWorker(workerUrl, upcomingUser, upcomingPassword, manual);
       setSyncMsg({ ok: true, text: 'Synchronisé avec GitHub ✓' });
+      // Bust les deux caches module pour forcer un re-fetch propre
+      bustUpcomingCache();
+      bustAllBannersCache();
+      // Notifie AllBannersTimeline de se recharger
+      window.dispatchEvent(new CustomEvent('upcoming-banners-updated'));
+      // Recharge les entrées locales avec les données fraîches
+      getUpcomingBanners().then(setEntries);
     } catch (err) {
       setSyncMsg({ ok: false, text: `Erreur : ${err.message}` });
     } finally {

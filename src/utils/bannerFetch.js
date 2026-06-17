@@ -54,22 +54,30 @@ export function isBannerStale(metadata) {
 let _upcomingCache = null;
 let _upcomingPromise = null;
 
+export function bustUpcomingCache() { _upcomingCache = null; _upcomingPromise = null; }
+
 /**
  * Merges upcoming banners from two sources:
  * 1. `banners-current.json#upcoming` — future phases detected by GitHub Actions from paimon.moe
- * 2. `banners-upcoming.json` — manually curated leaks/confirmed-but-not-yet-on-paimon banners
+ * 2. `banners-upcoming.json` — manually curated leaks
  *
- * Returns a deduplicated, sorted array of upcoming banner entries.
+ * banners-upcoming.json est toujours fetché sans cache (fichier édité en live).
  */
 export async function getUpcomingBanners() {
   if (_upcomingCache !== null) return _upcomingCache;
   if (_upcomingPromise) return _upcomingPromise;
 
+  // Timestamp cache-buster sur banners-upcoming.json pour bypasser navigateur ET CDN GitHub Pages
+  const t = Date.now();
+
   _upcomingPromise = Promise.allSettled([
     fetch(`${BASE_PATH}banners-current.json`, { signal: AbortSignal.timeout(8000) })
       .then((r) => r.ok ? r.json() : null)
       .then((d) => d?.upcoming ?? []),
-    fetch(`${BASE_PATH}banners-upcoming.json`, { signal: AbortSignal.timeout(8000) })
+    fetch(`${BASE_PATH}banners-upcoming.json?t=${t}`, {
+      signal: AbortSignal.timeout(8000),
+      cache: 'no-store',
+    })
       .then((r) => r.ok ? r.json() : [])
       .catch(() => []),
   ])
@@ -77,18 +85,13 @@ export async function getUpcomingBanners() {
       const auto   = autoResult.status   === 'fulfilled' ? (autoResult.value   ?? []) : [];
       const manual = manualResult.status === 'fulfilled' ? (manualResult.value ?? []) : [];
 
-      // Merge — deduplicate by version+bannerKey+featured
       const seen = new Set();
       const merged = [];
       for (const entry of [...auto, ...manual]) {
         const key = `${entry.version}-${entry.bannerKey}-${entry.featured}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          merged.push(entry);
-        }
+        if (!seen.has(key)) { seen.add(key); merged.push(entry); }
       }
 
-      // Sort: official first, then by startDate ascending (nulls last)
       merged.sort((a, b) => {
         if (a.confidence !== b.confidence) return a.confidence === 'officiel' ? -1 : 1;
         const aD = a.startDate ? new Date(a.startDate).getTime() : Infinity;

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { History } from 'lucide-react';
-import { getAllCharBanners } from '../utils/allBannersFetch';
+import { getAllCharBanners, bustAllBannersCache } from '../utils/allBannersFetch';
 
 const STATUS_CONFIG = {
   current:  { label: 'En cours',  cls: 'abt-badge abt-badge--current'  },
@@ -35,6 +35,16 @@ export function AllBannersTimeline() {
   const [expanded, setExpanded] = useState(false);
 
   useEffect(() => { getAllCharBanners().then(setEntries); }, []);
+
+  // Recharge quand UpcomingBanners vient de syncer avec GitHub
+  useEffect(() => {
+    function handleUpdate() {
+      bustAllBannersCache();
+      getAllCharBanners().then(setEntries);
+    }
+    window.addEventListener('upcoming-banners-updated', handleUpdate);
+    return () => window.removeEventListener('upcoming-banners-updated', handleUpdate);
+  }, []);
 
   if (!entries) return null;
   if (entries.length === 0) return null;

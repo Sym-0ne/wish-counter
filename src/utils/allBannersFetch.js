@@ -19,11 +19,18 @@ export async function getAllCharBanners() {
   if (_cache) return _cache;
   if (_promise) return _promise;
 
+  // Timestamp cache-buster uniquement sur banners-upcoming.json (édité en live).
+  // banners-history.json est stable (mis à jour par GitHub Actions une fois par jour).
+  const t = Date.now();
+
   _promise = Promise.allSettled([
     fetch(`${BASE}banners-history.json`, { signal: AbortSignal.timeout(8000) })
       .then((r) => r.ok ? r.json() : null)
       .catch(() => null),
-    fetch(`${BASE}banners-upcoming.json`, { signal: AbortSignal.timeout(8000) })
+    fetch(`${BASE}banners-upcoming.json?t=${t}`, {
+      signal: AbortSignal.timeout(8000),
+      cache: 'no-store',
+    })
       .then((r) => r.ok ? r.json() : [])
       .catch(() => []),
   ])
