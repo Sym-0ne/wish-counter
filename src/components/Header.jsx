@@ -1,4 +1,4 @@
-import { Sparkles, BarChart3, Layers, History, RefreshCw, Settings as SettingsIcon } from 'lucide-react';
+import { Sparkles, BarChart3, Layers, History, RefreshCw, Settings as SettingsIcon, Star } from 'lucide-react';
 import { BANNER_CONFIG, BANNER_KEYS } from '../utils/banners';
 import { ProfileBar } from './ProfileBar';
 
@@ -80,6 +80,13 @@ export function Header({ activeBanner, view, onBannerChange, onViewChange, onOpe
           >
             <History size={14} style={{ marginRight: 4 }} />
             Historique
+          </button>
+          <button
+            className={view === 'wishlist' ? 'active' : ''}
+            onClick={() => onViewChange('wishlist')}
+          >
+            <Star size={14} style={{ marginRight: 4 }} />
+            Wishlist
           </button>
         </div>
 

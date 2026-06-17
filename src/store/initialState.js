@@ -41,4 +41,7 @@ export const initialState = {
     lastSync: null,   // ISO string de la dernière sync réussie
   },
   versionFilter: null, // null = toutes versions, sinon string ex: "6.5"
+  // Wishlist structurée globale (indépendante des bannières)
+  // { id, name, itemType, priority: 'must'|'want'|'casual', targetCopies: N }
+  wishlistItems: [],
 };

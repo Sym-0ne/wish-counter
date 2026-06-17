@@ -1,11 +1,18 @@
 import { useMemo } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
-  ComposedChart, Line, Legend,
+  ComposedChart, Line, Legend, ReferenceLine,
 } from 'recharts';
 import { BANNER_CONFIG, BANNER_KEYS } from '../utils/banners';
 import { useBannerStats } from '../hooks/useDerivedStats';
-import { BarChart3, Sparkles, Target, TrendingUp, TrendingDown, Activity, GitBranch } from 'lucide-react';
+import { BarChart3, Sparkles, Target, TrendingUp, TrendingDown, Activity, GitBranch, Calendar } from 'lucide-react';
+
+const BANNER_COLORS = {
+  character:  'var(--gold)',
+  weapon:     'var(--purple)',
+  standard:   'var(--blue)',
+  chronicled: 'var(--teal)',
+};
 
 /**
  * Construit un histogramme de distribution des pity 5★ (regroupé par tranches de 10).
@@ -140,12 +147,16 @@ function GlobalStats({ banners }) {
   const aggregate = useMemo(() => {
     let total = 0;
     let fiveStars = 0;
+    let fourStars = 0;
     const allPities = [];
     let wins = 0;
     let losses = 0;
+    const byBanner = {};
+
     for (const key of BANNER_KEYS) {
       const b = banners[key];
       if (!b) continue;
+      byBanner[key] = b.history.length;
       total += b.history.length;
       let pity = 0;
       let isGuaranteed = false;
@@ -165,21 +176,35 @@ function GlobalStats({ banners }) {
               isGuaranteed = true;
             }
           }
+        } else if (wish.rank === 4) {
+          fourStars += 1;
         }
       }
     }
+
     const avg = allPities.length > 0
       ? allPities.reduce((a, b) => a + b, 0) / allPities.length
       : null;
     const total5050 = wins + losses;
+    const fiveStarRate = total > 0 ? (fiveStars / total) * 100 : null;
+    const fourStarRate = total > 0 ? (fourStars / total) * 100 : null;
+
+    // Bannière la plus jouée
+    const topBanner = Object.entries(byBanner).sort((a, b) => b[1] - a[1])[0];
+
     return {
       total,
       fiveStars,
+      fourStars,
       avg,
+      fiveStarRate,
+      fourStarRate,
       winRate: total5050 > 0 ? (wins / total5050) * 100 : null,
       wins,
       losses,
       primosSpent: total * 160,
+      byBanner,
+      topBanner,
     };
   }, [banners]);
 
@@ -189,16 +214,29 @@ function GlobalStats({ banners }) {
         <Activity size={18} /> Vue d'ensemble
       </h3>
       <div className="stats-grid">
-        <StatTile label="Total tirages" value={aggregate.total} icon={Activity} />
-        <StatTile label="5★ obtenus" value={aggregate.fiveStars} icon={Sparkles} />
+        <StatTile label="Total tirages" value={aggregate.total.toLocaleString('fr-FR')} icon={Activity} />
+        <StatTile
+          label="5★ obtenus"
+          value={aggregate.fiveStars}
+          sub={aggregate.fiveStarRate != null ? `${aggregate.fiveStarRate.toFixed(1)}% des tirages` : null}
+          icon={Sparkles}
+        />
+        <StatTile
+          label="4★ obtenus"
+          value={aggregate.fourStars}
+          sub={aggregate.fourStarRate != null ? `${aggregate.fourStarRate.toFixed(1)}% des tirages` : null}
+          icon={TrendingUp}
+        />
         <StatTile
           label="Primogemmes dépensées"
           value={aggregate.primosSpent.toLocaleString('fr-FR')}
+          sub={`≈ ${Math.floor(aggregate.primosSpent / 160)} tirages`}
           icon={Target}
         />
         <StatTile
-          label="Pity moyen (toutes bannières)"
+          label="Pity moyen 5★"
           value={aggregate.avg != null ? aggregate.avg.toFixed(1) : '—'}
+          sub="théorique : ~62.3"
           icon={Target}
         />
         <StatTile
@@ -207,7 +245,137 @@ function GlobalStats({ banners }) {
           sub={aggregate.winRate != null ? `${aggregate.wins}W / ${aggregate.losses}L` : null}
           icon={Target}
         />
+        {aggregate.topBanner && aggregate.total > 0 && (
+          <StatTile
+            label="Bannière la plus jouée"
+            value={BANNER_CONFIG[aggregate.topBanner[0]]?.label ?? aggregate.topBanner[0]}
+            sub={`${aggregate.topBanner[1]} tirages`}
+            icon={TrendingUp}
+          />
+        )}
       </div>
+
+      {/* Répartition par bannière */}
+      {aggregate.total > 0 && (
+        <div className="stats-breakdown">
+          {BANNER_KEYS.map((key) => {
+            const count = aggregate.byBanner[key] ?? 0;
+            const pct = aggregate.total > 0 ? (count / aggregate.total) * 100 : 0;
+            const cfg = BANNER_CONFIG[key];
+            return (
+              <div key={key} className="stats-breakdown__row">
+                <span className="stats-breakdown__label" style={{ color: cfg.color }}>
+                  {cfg.label}
+                </span>
+                <div className="stats-breakdown__bar-wrap">
+                  <div
+                    className="stats-breakdown__bar"
+                    style={{ width: `${pct}%`, background: BANNER_COLORS[key] }}
+                  />
+                </div>
+                <span className="stats-breakdown__count">{count}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
+
+/**
+ * Timeline mensuelle : nombre de tirages par mois, par bannière.
+ */
+function PullsTimeline({ banners }) {
+  const data = useMemo(() => {
+    const byMonth = {};
+
+    for (const key of BANNER_KEYS) {
+      const history = banners[key]?.history ?? [];
+      for (const wish of history) {
+        if (!wish.timestamp) continue;
+        const month = new Date(wish.timestamp).toISOString().slice(0, 7); // "2025-01"
+        if (!byMonth[month]) {
+          byMonth[month] = { month, character: 0, weapon: 0, standard: 0, chronicled: 0, total: 0, fiveStars: 0 };
+        }
+        byMonth[month][key] = (byMonth[month][key] ?? 0) + 1;
+        byMonth[month].total += 1;
+        if (wish.rank === 5) byMonth[month].fiveStars += 1;
+      }
+    }
+
+    return Object.values(byMonth).sort((a, b) => a.month.localeCompare(b.month));
+  }, [banners]);
+
+  const hasData = data.length > 0;
+
+  const tooltipStyle = {
+    contentStyle: {
+      background: 'var(--surface)',
+      border: '1px solid var(--border)',
+      borderRadius: '6px',
+      color: 'var(--text)',
+      fontSize: '12px',
+    },
+    cursor: { fill: 'rgba(192, 160, 96, 0.06)' },
+  };
+
+  // Format "2025-01" → "Jan 25"
+  function fmtMonth(m) {
+    const [y, mo] = m.split('-');
+    const d = new Date(+y, +mo - 1, 1);
+    return d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' });
+  }
+
+  return (
+    <section className="card">
+      <h3 className="card__title"><Calendar size={18} /> Timeline des tirages</h3>
+      <p className="card__subtitle">
+        Tirages par mois, répartis par bannière. Nécessite une synchronisation avec les données HoYoverse (timestamps).
+      </p>
+      {!hasData && (
+        <div className="empty-state">
+          Aucun tirage avec timestamp. Synchronise tes vœux via le bouton Sync.
+        </div>
+      )}
+      {hasData && (
+        <div style={{ width: '100%', height: 260, marginTop: 12 }}>
+          <ResponsiveContainer>
+            <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
+              <XAxis
+                dataKey="month"
+                tickFormatter={fmtMonth}
+                stroke="var(--muted)"
+                tick={{ fill: 'var(--muted)', fontSize: 10 }}
+              />
+              <YAxis
+                stroke="var(--muted)"
+                tick={{ fill: 'var(--muted)', fontSize: 11 }}
+                allowDecimals={false}
+              />
+              <Tooltip
+                {...tooltipStyle}
+                formatter={(value, name) => [value, BANNER_CONFIG[name]?.label ?? name]}
+                labelFormatter={fmtMonth}
+              />
+              <Legend
+                wrapperStyle={{ fontSize: 12, color: 'var(--muted)' }}
+                formatter={(value) => BANNER_CONFIG[value]?.label ?? value}
+              />
+              {BANNER_KEYS.map((key) => (
+                <Bar
+                  key={key}
+                  dataKey={key}
+                  stackId="a"
+                  fill={BANNER_COLORS[key]}
+                  opacity={0.85}
+                  radius={key === 'chronicled' ? [3, 3, 0, 0] : [0, 0, 0, 0]}
+                />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </section>
   );
 }
@@ -346,6 +514,7 @@ export function StatsPanel({ banners }) {
   return (
     <div className="section-spacing">
       <GlobalStats banners={banners} />
+      <PullsTimeline banners={banners} />
       <VersionHistory banners={banners} />
       {BANNER_KEYS.map((key) => (
         <BannerStats key={key} bannerKey={key} banner={banners[key]} />

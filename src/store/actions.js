@@ -17,6 +17,9 @@ export const ActionTypes = {
   RESET_BANNER: 'RESET_BANNER',
   IMPORT_STATE: 'IMPORT_STATE',
   RESET_ALL: 'RESET_ALL',
+  ADD_WISHLIST_ITEM: 'ADD_WISHLIST_ITEM',
+  REMOVE_WISHLIST_ITEM: 'REMOVE_WISHLIST_ITEM',
+  UPDATE_WISHLIST_ITEM: 'UPDATE_WISHLIST_ITEM',
 };
 
 export const addWish = (banner, wish) => ({
@@ -96,4 +99,19 @@ export const resetAll = () => ({
 export const addThreeStarsBulk = (banner, count) => ({
   type: ActionTypes.ADD_THREE_STARS_BULK,
   payload: { banner, count },
+});
+
+export const addWishlistItem = (item) => ({
+  type: ActionTypes.ADD_WISHLIST_ITEM,
+  payload: { item },
+});
+
+export const removeWishlistItem = (id) => ({
+  type: ActionTypes.REMOVE_WISHLIST_ITEM,
+  payload: { id },
+});
+
+export const updateWishlistItem = (id, patch) => ({
+  type: ActionTypes.UPDATE_WISHLIST_ITEM,
+  payload: { id, patch },
 });

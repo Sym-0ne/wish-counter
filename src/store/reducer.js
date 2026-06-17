@@ -244,6 +244,7 @@ export function reducer(state, action) {
           ...merged,
           banners,
           version: merged.version || CURRENT_VERSION,
+          wishlistItems: Array.isArray(merged.wishlistItems) ? merged.wishlistItems : [],
           // Preserve built-in workerUrl when the imported save had an empty one
           // (same guard as usePersistedReducer for localStorage restores)
           sync: {
@@ -256,6 +257,30 @@ export function reducer(state, action) {
         console.error('Import error:', e);
         return state;
       }
+    }
+
+    case ActionTypes.ADD_WISHLIST_ITEM: {
+      const id = `wl-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+      return {
+        ...state,
+        wishlistItems: [...(state.wishlistItems ?? []), { ...action.payload.item, id }],
+      };
+    }
+
+    case ActionTypes.REMOVE_WISHLIST_ITEM: {
+      return {
+        ...state,
+        wishlistItems: (state.wishlistItems ?? []).filter((i) => i.id !== action.payload.id),
+      };
+    }
+
+    case ActionTypes.UPDATE_WISHLIST_ITEM: {
+      return {
+        ...state,
+        wishlistItems: (state.wishlistItems ?? []).map((i) =>
+          i.id === action.payload.id ? { ...i, ...action.payload.patch } : i
+        ),
+      };
     }
 
     case ActionTypes.RESET_ALL: {

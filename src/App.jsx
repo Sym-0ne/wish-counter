@@ -18,6 +18,7 @@ import { ConstellationTracker } from './components/ConstellationTracker';
 import { Settings } from './components/Settings';
 import { SyncModal } from './components/SyncModal';
 import { BannerHistory } from './components/BannerHistory';
+import { WishlistTab } from './components/WishlistTab';
 
 export default function App({ profileId = 'default', profileProps = {} }) {
   const [state, dispatch] = usePersistedReducer(profileId);
@@ -171,6 +172,17 @@ export default function App({ profileId = 'default', profileProps = {} }) {
           <BannerHistory
             banners={state.banners}
             onUpdateWish={(bannerKey, wishId, patch) => dispatch(A.updateWish(bannerKey, wishId, patch))}
+          />
+        </main>
+      )}
+
+      {view === 'wishlist' && (
+        <main className="app__main app__main--full">
+          <WishlistTab
+            wishlistItems={state.wishlistItems ?? []}
+            onAdd={(item) => dispatch(A.addWishlistItem(item))}
+            onRemove={(id) => dispatch(A.removeWishlistItem(id))}
+            onUpdate={(id, patch) => dispatch(A.updateWishlistItem(id, patch))}
           />
         </main>
       )}
