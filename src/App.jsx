@@ -168,7 +168,10 @@ export default function App({ profileId = 'default', profileProps = {} }) {
 
       {view === 'history' && (
         <main className="app__main app__main--full">
-          <BannerHistory banners={state.banners} />
+          <BannerHistory
+            banners={state.banners}
+            onUpdateWish={(bannerKey, wishId, patch) => dispatch(A.updateWish(bannerKey, wishId, patch))}
+          />
         </main>
       )}
 

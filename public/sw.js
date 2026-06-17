@@ -9,13 +9,14 @@
  * Bump CACHE_NAME à chaque changement de stratégie pour vider les anciens caches.
  */
 
-const CACHE_NAME = 'genshin-tracker-v3';
+const CACHE_NAME = 'genshin-tracker-v4';
 
 // URLs qui doivent toujours aller au réseau d'abord (contenu dynamique / non-hashé)
 const NETWORK_FIRST_PATTERNS = [
   /\/wish-counter\/?$/,
   /\/wish-counter\/index\.html/,
   /\/banners-current\.json/,
+  /\/banners-history\.json/,
 ];
 
 // ---- Installation ----

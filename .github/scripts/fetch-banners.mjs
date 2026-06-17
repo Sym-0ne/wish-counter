@@ -14,7 +14,8 @@ import { fileURLToPath } from 'url';
 import { createContext, Script } from 'vm';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const OUT_FILE = join(__dirname, '../../public/banners-current.json');
+const OUT_FILE  = join(__dirname, '../../public/banners-current.json');
+const HIST_FILE = join(__dirname, '../../public/banners-history.json');
 
 const BANNERS_JS_URL =
   'https://raw.githubusercontent.com/MadeBaruna/paimon-moe/main/src/data/banners.js';
@@ -196,6 +197,58 @@ async function main() {
 
   writeFileSync(OUT_FILE, JSON.stringify(result, null, 2), 'utf8');
   console.log(`Wrote ${OUT_FILE}`);
+
+  // ── History file (all phases, for BannerHistory timestamp-matching) ───────
+  function processAllCharPhases(list) {
+    return (list ?? [])
+      .filter((b) => b.start && b.end && !b.end.startsWith('2200'))
+      .map((b) => {
+        const slugs = b.featured ?? [];
+        const p1 = slugs[0] ?? null;
+        const p2 = slugs[1] ?? null;
+        return {
+          startMs: new Date(b.start.replace(' ', 'T')).getTime(),
+          endMs:   new Date(b.end.replace(' ', 'T')).getTime(),
+          featured:          p1 ? slugToName(p1) : null,
+          featuredSlug:      p1,
+          featuredPortrait:  p1 ? `${ENKA_BASE}/UI_AvatarIcon_${slugToEnkaName(p1)}.png` : null,
+          featured2:         p2 ? slugToName(p2) : null,
+          featured2Slug:     p2,
+          featured2Portrait: p2 ? `${ENKA_BASE}/UI_AvatarIcon_${slugToEnkaName(p2)}.png` : null,
+          version:    b.version ?? null,
+          bannerName: b.name   ?? null,
+        };
+      });
+  }
+
+  function processAllWeaponPhases(list) {
+    return (list ?? [])
+      .filter((b) => b.start && b.end && !b.end.startsWith('2200'))
+      .map((b) => {
+        const slugs = b.featured ?? [];
+        const w1 = slugs[0] ?? null;
+        const w2 = slugs[1] ?? null;
+        return {
+          startMs: new Date(b.start.replace(' ', 'T')).getTime(),
+          endMs:   new Date(b.end.replace(' ', 'T')).getTime(),
+          featured:      w1 ? slugToName(w1) : null,
+          featuredSlug:  w1,
+          featured2:     w2 ? slugToName(w2) : null,
+          featured2Slug: w2,
+          version:    b.version ?? null,
+          bannerName: b.name   ?? null,
+        };
+      });
+  }
+
+  const history = {
+    fetchedAt: new Date().toISOString(),
+    character:  processAllCharPhases(banners.characters),
+    weapon:     processAllWeaponPhases(banners.weapons),
+    chronicled: processAllCharPhases(banners.chronicled ?? []),
+  };
+  writeFileSync(HIST_FILE, JSON.stringify(history, null, 2), 'utf8');
+  console.log(`Wrote ${HIST_FILE} (${history.character.length} char + ${history.weapon.length} weapon + ${history.chronicled.length} chronicled phases)`);
 }
 
 main().catch((err) => {
