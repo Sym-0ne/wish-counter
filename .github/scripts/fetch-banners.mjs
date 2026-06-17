@@ -228,6 +228,73 @@ async function main() {
     console.log(`  → Chronicled: ${chronicledData.featured ?? '?'} (until ${chronicledData.endDate})`);
   }
 
+  // ── Upcoming banners (future phases already in paimon.moe data) ─────────────
+  function toMsLocal(str) {
+    if (!str) return 0;
+    const s = str.replace(' ', 'T');
+    return new Date(s.includes('+') || s.endsWith('Z') ? s : s + '+08:00').getTime();
+  }
+  const nowMs = Date.now();
+
+  function extractUpcomingChars(list) {
+    return (list ?? [])
+      .filter((b) => b.start && b.end && !b.end.startsWith('2200') && toMsLocal(b.start) > nowMs)
+      .map((b) => {
+        const slugs = b.featured ?? [];
+        const p1 = slugs[0] ?? null;
+        const p2 = slugs[1] ?? null;
+        return {
+          bannerKey:  'character',
+          version:    b.version ?? null,
+          featured:   p1 ? slugToName(p1) : null,
+          featuredSlug: p1,
+          featuredPortrait: p1 ? `${ENKA_BASE}/UI_AvatarIcon_${slugToEnkaName(p1)}.png` : null,
+          featured2:  p2 ? slugToName(p2) : null,
+          featured2Slug: p2,
+          featured2Portrait: p2 ? `${ENKA_BASE}/UI_AvatarIcon_${slugToEnkaName(p2)}.png` : null,
+          startDate:  toISODate(b.start),
+          endDate:    toISODate(b.end),
+          confidence: 'officiel',
+          source:     'paimon.moe',
+        };
+      });
+  }
+
+  function extractUpcomingWeapons(list) {
+    return ((list ?? [])
+      .filter((b) => b.start && b.end && !b.end.startsWith('2200') && toMsLocal(b.start) > nowMs))
+      .map((b) => {
+        const slugs = b.featured ?? [];
+        const w1 = slugs[0] ?? null;
+        const w2 = slugs[1] ?? null;
+        const w1Name = w1 ? slugToName(w1) : null;
+        const w2Name = w2 ? slugToName(w2) : null;
+        return {
+          bannerKey:  'weapon',
+          version:    b.version ?? null,
+          featured:   w1Name,
+          featuredSlug: w1,
+          featuredPortrait: w1Name ? (weaponIconLookup[normName(w1Name)] ?? null) : null,
+          featured2:  w2Name,
+          featured2Slug: w2,
+          featured2Portrait: w2Name ? (weaponIconLookup[normName(w2Name)] ?? null) : null,
+          startDate:  toISODate(b.start),
+          endDate:    toISODate(b.end),
+          confidence: 'officiel',
+          source:     'paimon.moe',
+        };
+      });
+  }
+
+  const upcomingFromPaimon = [
+    ...extractUpcomingChars(banners.characters),
+    ...extractUpcomingWeapons(banners.weapons ?? []),
+    ...extractUpcomingChars(banners.chronicled ?? []).map((b) => ({ ...b, bannerKey: 'chronicled' })),
+  ];
+  if (upcomingFromPaimon.length) {
+    console.log(`  → ${upcomingFromPaimon.length} upcoming banner(s) from paimon.moe`);
+  }
+
   const result = {
     fetchedAt: new Date().toISOString(),
     source: 'paimon.moe',
@@ -237,6 +304,7 @@ async function main() {
       chronicled: chronicledData,
       standard:   null,
     },
+    upcoming: upcomingFromPaimon,
   };
 
   writeFileSync(OUT_FILE, JSON.stringify(result, null, 2), 'utf8');

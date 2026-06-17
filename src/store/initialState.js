@@ -44,4 +44,6 @@ export const initialState = {
   // Wishlist structurée globale (indépendante des bannières)
   // { id, name, itemType, priority: 'must'|'want'|'casual', targetCopies: N }
   wishlistItems: [],
+  // Ressources actuelles pour calculer le nombre de tirages disponibles
+  primoTracker: { primos: 0, fates: 0 },
 };

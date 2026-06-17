@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
-import { Download, Upload, AlertTriangle } from 'lucide-react';
+import { Download, Upload, AlertTriangle, FileText } from 'lucide-react';
+import { BANNER_CONFIG, BANNER_KEYS } from '../utils/banners';
 
 /**
  * Export et import de l'état complet en JSON.
@@ -19,6 +20,30 @@ export function ExportImport({ state, onImport }) {
     a.href = url;
     const date = new Date().toISOString().slice(0, 10);
     a.download = `genshin-tracker-${date}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportCsv = () => {
+    const rows = [['Bannière', 'Date', 'Heure', 'Version', 'Rang', 'Nom', 'Type', 'Pity', 'Win/Loss', 'ID']];
+    for (const key of BANNER_KEYS) {
+      const label = BANNER_CONFIG[key].label;
+      for (const w of (state.banners[key]?.history ?? [])) {
+        const dt = w.timestamp ? new Date(w.timestamp) : null;
+        const date = dt ? dt.toLocaleDateString('fr-FR') : '';
+        const time = dt ? dt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
+        const wl = w.featured === true ? 'Win' : w.featured === false ? 'Perte' : '';
+        rows.push([label, date, time, w.version ?? '', w.rank, w.name ?? '', w.itemType ?? '', w.pityAt ?? '', wl, w.id ?? '']);
+      }
+    }
+    const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `genshin-wishes-${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -63,6 +88,9 @@ export function ExportImport({ state, onImport }) {
       <div className="flex gap-md" style={{ flexWrap: 'wrap' }}>
         <button className="btn btn--primary" onClick={handleExport}>
           <Download size={16} /> Exporter en JSON
+        </button>
+        <button className="btn" onClick={handleExportCsv}>
+          <FileText size={16} /> Exporter en CSV
         </button>
         <button className="btn" onClick={() => fileInputRef.current?.click()}>
           <Upload size={16} /> Importer un fichier

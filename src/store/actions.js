@@ -20,6 +20,7 @@ export const ActionTypes = {
   ADD_WISHLIST_ITEM: 'ADD_WISHLIST_ITEM',
   REMOVE_WISHLIST_ITEM: 'REMOVE_WISHLIST_ITEM',
   UPDATE_WISHLIST_ITEM: 'UPDATE_WISHLIST_ITEM',
+  UPDATE_PRIMO_TRACKER: 'UPDATE_PRIMO_TRACKER',
 };
 
 export const addWish = (banner, wish) => ({
@@ -114,4 +115,9 @@ export const removeWishlistItem = (id) => ({
 export const updateWishlistItem = (id, patch) => ({
   type: ActionTypes.UPDATE_WISHLIST_ITEM,
   payload: { id, patch },
+});
+
+export const updatePrimoTracker = (patch) => ({
+  type: ActionTypes.UPDATE_PRIMO_TRACKER,
+  payload: { patch },
 });

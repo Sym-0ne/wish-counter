@@ -134,6 +134,10 @@ export function BannerInfo({ bannerKey, banner, onChange, onOpenSync }) {
   const isStale = isBannerStale(m);
   const hasAnyData = featuredName || m.endDate;
 
+  // Countdown : jours restants avant expiration
+  const daysLeft = m.endDate ? Math.ceil((new Date(m.endDate) - new Date()) / 86400000) : null;
+  const expiresSoon = daysLeft !== null && daysLeft >= 0 && daysLeft <= 3;
+
   return (
     <div className="card">
       <div className="card__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -141,6 +145,15 @@ export function BannerInfo({ bannerKey, banner, onChange, onOpenSync }) {
         {m.bannerName && !isStale && (
           <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontFamily: 'var(--font-body)', fontWeight: 400 }}>
             — {m.bannerName}
+          </span>
+        )}
+        {expiresSoon && (
+          <span
+            className={`badge badge--pulse ${daysLeft === 0 ? 'badge--critical' : 'badge--soft'}`}
+            style={{ fontSize: '0.65rem', fontFamily: 'var(--font-body)', marginLeft: 4 }}
+            title="La bannière expire bientôt !"
+          >
+            ⏳ {daysLeft === 0 ? 'Expire aujourd\'hui' : `J-${daysLeft}`}
           </span>
         )}
         {autoFilled && !isStale && (

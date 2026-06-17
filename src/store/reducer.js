@@ -259,6 +259,13 @@ export function reducer(state, action) {
       }
     }
 
+    case ActionTypes.UPDATE_PRIMO_TRACKER: {
+      return {
+        ...state,
+        primoTracker: { ...(state.primoTracker ?? { primos: 0, fates: 0 }), ...action.payload.patch },
+      };
+    }
+
     case ActionTypes.ADD_WISHLIST_ITEM: {
       const id = `wl-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
       return {

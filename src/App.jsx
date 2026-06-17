@@ -19,6 +19,8 @@ import { Settings } from './components/Settings';
 import { SyncModal } from './components/SyncModal';
 import { BannerHistory } from './components/BannerHistory';
 import { WishlistTab } from './components/WishlistTab';
+import { PrimoTracker } from './components/PrimoTracker';
+import { UpcomingBanners } from './components/UpcomingBanners';
 
 export default function App({ profileId = 'default', profileProps = {} }) {
   const [state, dispatch] = usePersistedReducer(profileId);
@@ -129,6 +131,7 @@ export default function App({ profileId = 'default', profileProps = {} }) {
               }
               onOpenSync={() => setSyncOpen(true)}
             />
+            <UpcomingBanners />
             <PityCard
               banner={activeBanner}
               bannerKey={activeKey}
@@ -152,6 +155,12 @@ export default function App({ profileId = 'default', profileProps = {} }) {
 
           <div className="app__col">
             <ProbabilityCalc banner={activeBanner} bannerKey={activeKey} />
+            <PrimoTracker
+              primoTracker={state.primoTracker}
+              banner={activeBanner}
+              bannerKey={activeKey}
+              onChange={(patch) => dispatch(A.updatePrimoTracker(patch))}
+            />
             <Wishlist
               bannerKey={activeKey}
               banner={activeBanner}
