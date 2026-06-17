@@ -1,6 +1,36 @@
-import { Sparkles, BarChart3, Layers, History, RefreshCw, Settings as SettingsIcon, Star } from 'lucide-react';
+import { Sparkles, BarChart3, Layers, History, RefreshCw, Settings as SettingsIcon, Star, Download } from 'lucide-react';
 import { BANNER_CONFIG, BANNER_KEYS } from '../utils/banners';
 import { ProfileBar } from './ProfileBar';
+import { useEffect, useState } from 'react';
+
+function InstallButton() {
+  const [prompt, setPrompt] = useState(null);
+  const [installed, setInstalled] = useState(false);
+
+  useEffect(() => {
+    const handler = (e) => { e.preventDefault(); setPrompt(e); };
+    window.addEventListener('beforeinstallprompt', handler);
+    window.addEventListener('appinstalled', () => { setInstalled(true); setPrompt(null); });
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  if (!prompt || installed) return null;
+
+  return (
+    <button
+      className="btn btn--ghost btn--small"
+      title="Installer l'application"
+      onClick={async () => {
+        prompt.prompt();
+        const { outcome } = await prompt.userChoice;
+        if (outcome === 'accepted') setInstalled(true);
+        setPrompt(null);
+      }}
+    >
+      <Download size={14} />
+    </button>
+  );
+}
 
 function SyncButton({ sync, syncing, onOpenSync }) {
   const hasConfig = sync?.workerUrl && sync?.authkeyUrl;
@@ -91,6 +121,7 @@ export function Header({ activeBanner, view, onBannerChange, onViewChange, onOpe
         </div>
 
         <SyncButton sync={sync} syncing={syncing} onOpenSync={onOpenSync} />
+        <InstallButton />
 
         {profileProps?.profiles && (
           <ProfileBar

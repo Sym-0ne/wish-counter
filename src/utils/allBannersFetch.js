@@ -15,6 +15,45 @@ let _promise  = null;
 
 export function bustAllBannersCache() { _cache = null; _promise = null; }
 
+let _weapCache   = null;
+let _weapPromise = null;
+export function bustWeaponBannersCache() { _weapCache = null; _weapPromise = null; }
+
+export async function getAllWeaponBanners() {
+  if (_weapCache) return _weapCache;
+  if (_weapPromise) return _weapPromise;
+
+  _weapPromise = fetch(`${BASE}banners-history.json`, { signal: AbortSignal.timeout(8000) })
+    .then((r) => r.ok ? r.json() : null)
+    .catch(() => null)
+    .then((hist) => {
+      const nowMs = Date.now();
+      const raw = hist?.weapon ?? [];
+
+      // Assign phase numbers by version (same logic as character banners)
+      const byVersion = {};
+      for (const b of raw) {
+        const v = b.version ?? 'unknown';
+        (byVersion[v] ??= []).push(b);
+      }
+      for (const group of Object.values(byVersion)) {
+        group.sort((a, b) => a.startMs - b.startMs);
+        group.forEach((e, i) => { e.phase = i + 1; });
+      }
+
+      const entries = raw.map((b) => ({
+        ...b,
+        status: b.endMs < nowMs ? 'past' : b.startMs > nowMs ? 'upcoming' : 'current',
+      }));
+      entries.sort((a, b) => (b.startMs ?? 0) - (a.startMs ?? 0));
+      _weapCache = entries;
+      return entries;
+    })
+    .finally(() => { _weapPromise = null; });
+
+  return _weapPromise;
+}
+
 export async function getAllCharBanners() {
   if (_cache) return _cache;
   if (_promise) return _promise;

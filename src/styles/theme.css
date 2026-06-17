@@ -1831,6 +1831,7 @@ h1, h2, h3, h4 {
 
 /* ========== ALL BANNERS TIMELINE ========== */
 .abt-section { padding-bottom: 8px; }
+.abt-tabs { display: flex; gap: 6px; }
 .abt-list {
   display: flex;
   flex-direction: column;
