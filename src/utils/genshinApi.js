@@ -1,74 +1,93 @@
 /**
- * Accès à l'API communautaire genshin.jmp.blue (CORS-friendly, gratuite).
- * Utilisée pour : liste des personnages/armes, icônes de portraits.
+ * Accès aux données de personnages/armes Genshin Impact.
  *
- * Cache module-level pour éviter de refetch à chaque render.
+ * Sources :
+ *  - gi.yatta.moe  : liste complète + à jour (tous les personnages dont v5/v6+)
+ *  - genshin.jmp.blue : fallback (s'arrête à ~v4.7, ~92 personnages)
+ *
+ * Chaque item retourné : { slug, name, rarity, portraitUrl }
  */
 
-const BASE = 'https://genshin.jmp.blue';
+const YATTA_BASE = 'https://gi.yatta.moe/api/v2';
+const JMP_BASE   = 'https://genshin.jmp.blue';
 
 // Module-level cache (survive les re-renders, pas les rechargements page)
-let charCache = null;   // Map<slug, { name, slug }>
-let weapCache = null;   // Map<slug, { name, slug }>
+let charCache = null;
+let weapCache = null;
+
+// ── Normalisation pour recherche souple (accents, espaces, tirets ignorés) ──
 
 function normalize(s) {
   return (s || '').toLowerCase().replace(/[\s\-'`"éèêëàâùûüîïôç]/g, (c) => {
-    const map = { é: 'e', è: 'e', ê: 'e', ë: 'e', à: 'a', â: 'a', ù: 'u', û: 'u', ü: 'u', î: 'i', ï: 'i', ô: 'o', ç: 'c' };
+    const map = { é:'e', è:'e', ê:'e', ë:'e', à:'a', â:'a', ù:'u', û:'u', ü:'u', î:'i', ï:'i', ô:'o', ç:'c' };
     return map[c] ?? '';
   });
 }
 
-async function fetchList(type) {
-  const resp = await fetch(`${BASE}/${type}`, { signal: AbortSignal.timeout(8000) });
-  if (!resp.ok) throw new Error(`genshin.jmp.blue: HTTP ${resp.status}`);
-  return resp.json(); // string[]
+// ── Yatta.moe ────────────────────────────────────────────────────────────────
+
+async function fetchYattaCharacters() {
+  const resp = await fetch(`${YATTA_BASE}/en/avatar`, {
+    signal: AbortSignal.timeout(10000),
+  });
+  if (!resp.ok) throw new Error(`yatta: HTTP ${resp.status}`);
+  const { data } = await resp.json();
+  return Object.values(data?.items ?? {})
+    .filter((c) => c.id && c.name && c.icon && !c.name.includes('Test'))
+    .map((c) => ({
+      slug: c.icon.replace('UI_AvatarIcon_', ''), // e.g. "Mavuika", "Hutao"
+      name: c.name,
+      rarity: c.rank,
+      portraitUrl: `https://enka.network/ui/${c.icon}.png`,
+    }));
 }
 
-async function fetchAllData(type) {
-  const resp = await fetch(`${BASE}/${type}/all`, { signal: AbortSignal.timeout(10000) });
-  if (!resp.ok) throw new Error(`genshin.jmp.blue /all: HTTP ${resp.status}`);
+// ── genshin.jmp.blue (fallback) ───────────────────────────────────────────
+
+async function fetchJmpCharacters() {
+  const resp = await fetch(`${JMP_BASE}/characters/all`, { signal: AbortSignal.timeout(10000) });
+  if (!resp.ok) throw new Error(`jmp.blue: HTTP ${resp.status}`);
   const data = await resp.json();
-  // Returns { slug: { name, ... } }
   return Object.entries(data).map(([slug, info]) => ({
     slug,
     name: info.name || slug,
     rarity: info.rarity,
+    portraitUrl: `${JMP_BASE}/characters/${slug}/icon-big`,
   }));
 }
+
+// ── Public API ────────────────────────────────────────────────────────────────
 
 export async function getCharacterList() {
   if (charCache) return charCache;
   try {
-    const items = await fetchAllData('characters');
-    charCache = items;
-    return charCache;
+    charCache = await fetchYattaCharacters();
   } catch {
-    // Fallback: juste les slugs
     try {
-      const slugs = await fetchList('characters');
-      charCache = slugs.map(slug => ({ slug, name: slug }));
-      return charCache;
+      charCache = await fetchJmpCharacters();
     } catch {
-      return [];
+      charCache = [];
     }
   }
+  return charCache;
 }
 
 export async function getWeaponList() {
   if (weapCache) return weapCache;
   try {
-    const items = await fetchAllData('weapons');
-    weapCache = items;
-    return weapCache;
+    const resp = await fetch(`${JMP_BASE}/weapons/all`, { signal: AbortSignal.timeout(10000) });
+    if (!resp.ok) throw new Error(`jmp.blue weapons: HTTP ${resp.status}`);
+    const data = await resp.json();
+    weapCache = Object.entries(data).map(([slug, info]) => ({
+      slug,
+      name: info.name || slug,
+      rarity: info.rarity,
+      portraitUrl: `${JMP_BASE}/weapons/${slug}/icon`,
+    }));
   } catch {
-    try {
-      const slugs = await fetchList('weapons');
-      weapCache = slugs.map(slug => ({ slug, name: slug }));
-      return weapCache;
-    } catch {
-      return [];
-    }
+    weapCache = [];
   }
+  return weapCache;
 }
 
 /**
@@ -78,18 +97,40 @@ export async function getWeaponList() {
 export function findSlug(list, name) {
   if (!name || !list.length) return null;
   const query = normalize(name);
-  // Correspondance exacte d'abord
-  let match = list.find(item => normalize(item.name) === query || normalize(item.slug) === query);
+  let match = list.find(
+    (item) => normalize(item.name) === query || normalize(item.slug) === query
+  );
   if (match) return match.slug;
-  // Correspondance partielle (le nom commence par la requête)
-  match = list.find(item => normalize(item.name).startsWith(query) || query.startsWith(normalize(item.name)));
+  match = list.find(
+    (item) =>
+      normalize(item.name).startsWith(query) || query.startsWith(normalize(item.name))
+  );
   return match ? match.slug : null;
 }
 
+/**
+ * Cherche l'item complet par nom (avec portraitUrl pré-calculé).
+ */
+export function findItem(list, name) {
+  if (!name || !list.length) return null;
+  const slug = findSlug(list, name);
+  return slug ? (list.find((i) => i.slug === slug) ?? null) : null;
+}
+
+// ── URL helpers (rétro-compatibilité) ────────────────────────────────────────
+
 export function characterIconUrl(slug) {
-  return `${BASE}/characters/${slug}/icon-big`;
+  return `${JMP_BASE}/characters/${slug}/icon-big`;
 }
 
 export function weaponIconUrl(slug) {
-  return `${BASE}/weapons/${slug}/icon`;
+  return `${JMP_BASE}/weapons/${slug}/icon`;
+}
+
+// enka.network — toujours à jour avec les fichiers du jeu
+export function characterEnkaUrl(slug) {
+  const enkaName = slug
+    .replace(/[_-](\w)/g, (_, c) => c.toUpperCase())
+    .replace(/^\w/, (c) => c.toUpperCase());
+  return `https://enka.network/ui/UI_AvatarIcon_${enkaName}.png`;
 }

@@ -145,6 +145,7 @@ export default function App({ profileId = 'default', profileProps = {} }) {
               banner={activeBanner}
               bannerKey={activeKey}
               versionFilter={state.versionFilter}
+              onUpdateWish={(wishId, patch) => dispatch(A.updateWish(activeKey, wishId, patch))}
             />
           </div>
 

@@ -10,11 +10,10 @@ function formatDate(ts) {
     ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
-export function WishHistory({ banner, bannerKey, versionFilter }) {
+export function WishHistory({ banner, bannerKey, versionFilter, onUpdateWish }) {
   const cfg = BANNER_CONFIG[bannerKey];
   const [page, setPage] = useState(1);
 
-  // Filtre par version + tri reverse chrono
   const filtered = useMemo(() => {
     const list = banner.history;
     const arr = versionFilter ? list.filter(w => w.version === versionFilter) : list;
@@ -40,7 +39,13 @@ export function WishHistory({ banner, bannerKey, versionFilter }) {
       ) : (
         <div className="history__list">
           {visible.map((wish) => (
-            <HistoryRow key={wish.id} wish={wish} bannerKey={bannerKey} cfg={cfg} />
+            <HistoryRow
+              key={wish.id}
+              wish={wish}
+              bannerKey={bannerKey}
+              cfg={cfg}
+              onUpdateWish={onUpdateWish}
+            />
           ))}
           {hasMore && (
             <div className="history__more" onClick={() => setPage(page + 1)}>
@@ -53,24 +58,44 @@ export function WishHistory({ banner, bannerKey, versionFilter }) {
   );
 }
 
-function HistoryRow({ wish, bannerKey, cfg }) {
+function HistoryRow({ wish, bannerKey, cfg, onUpdateWish }) {
   const isSoftPity = wish.rank === 5 && wish.pityAt && wish.pityAt >= cfg.softPity5;
   const showFeaturedBadge = wish.rank === 5 && (cfg.has5050 || cfg.hasFatePoints);
+
+  function cycleFeatured() {
+    if (!onUpdateWish) return;
+    // Cycle: null/undefined → true → false → null
+    const next = (wish.featured == null) ? true : wish.featured === true ? false : null;
+    onUpdateWish(wish.id, { featured: next });
+  }
+
+  const featuredLabel = () => {
+    if (bannerKey === 'weapon') {
+      return wish.featured === true ? 'ciblée' : wish.featured === false ? 'non-ciblée' : '?';
+    }
+    return wish.featured === true ? 'win' : wish.featured === false ? 'loss' : '?';
+  };
+
+  const featuredClass = () => {
+    if (wish.featured === true)  return 'history__featured--won';
+    if (wish.featured === false) return 'history__featured--lost';
+    return 'history__featured--unknown';
+  };
+
   return (
     <div className={`history__item history__item--rank-${wish.rank}`}>
       <span className={`history__rank history__rank--${wish.rank}`}>{wish.rank}★</span>
       <span className="history__name">
         {wish.name || (wish.rank === 3 ? 'Arme 3★' : '—')}
         {showFeaturedBadge && (
-          <span
-            className={`history__featured ${
-              wish.featured ? 'history__featured--won' : 'history__featured--lost'
-            }`}
+          <button
+            type="button"
+            className={`history__featured history__featured--interactive ${featuredClass()}`}
+            onClick={cycleFeatured}
+            title="Cliquer pour modifier : ? → win → loss → ?"
           >
-            {bannerKey === 'weapon'
-              ? wish.featured ? 'ciblée' : 'non-ciblée'
-              : wish.featured ? 'win' : 'loss'}
-          </span>
+            {featuredLabel()}
+          </button>
         )}
       </span>
       <span className={`history__pity ${isSoftPity ? 'history__pity--soft' : ''}`}>

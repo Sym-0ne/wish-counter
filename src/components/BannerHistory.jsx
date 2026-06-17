@@ -4,9 +4,7 @@ import { BANNER_CONFIG, BANNER_KEYS } from '../utils/banners';
 import {
   getCharacterList,
   getWeaponList,
-  findSlug,
-  characterIconUrl,
-  weaponIconUrl,
+  findItem,
 } from '../utils/genshinApi';
 
 // ── Portrait cache ──────────────────────────────────────────────────────────
@@ -17,10 +15,8 @@ async function resolvePortrait(name, itemType) {
   if (name in portraitCache) return;
   try {
     const list = itemType === 'character' ? await getCharacterList() : await getWeaponList();
-    const slug = findSlug(list, name);
-    portraitCache[name] = slug
-      ? (itemType === 'character' ? characterIconUrl(slug) : weaponIconUrl(slug))
-      : null;
+    const item = findItem(list, name);
+    portraitCache[name] = item?.portraitUrl ?? null;
   } catch {
     portraitCache[name] = null;
   }

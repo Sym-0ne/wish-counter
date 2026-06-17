@@ -100,12 +100,27 @@ export function reducer(state, action) {
       const { banner: bannerKey } = action.payload;
       const banner = state.banners[bannerKey];
       if (!banner || banner.history.length === 0) return state;
-      // Edge case : undo sur historique vide → no-op (déjà géré par condition ci-dessus).
       const newHistory = banner.history.slice(0, -1);
       const newBanner = rebuildBanner({ ...banner, history: newHistory }, bannerKey);
       return {
         ...state,
         banners: { ...state.banners, [bannerKey]: newBanner },
+      };
+    }
+
+    case ActionTypes.UPDATE_WISH: {
+      const { bannerKey, wishId, patch } = action.payload;
+      const banner = state.banners[bannerKey];
+      if (!banner) return state;
+      const newHistory = banner.history.map((w) =>
+        w.id === wishId ? { ...w, ...patch } : w
+      );
+      return {
+        ...state,
+        banners: {
+          ...state.banners,
+          [bannerKey]: rebuildBanner({ ...banner, history: newHistory }, bannerKey),
+        },
       };
     }
 
@@ -223,11 +238,18 @@ export function reducer(state, action) {
             key,
           );
         }
+        const importedSync = merged.sync || {};
         return {
           ...initialState,
           ...merged,
           banners,
           version: merged.version || CURRENT_VERSION,
+          // Preserve built-in workerUrl when the imported save had an empty one
+          // (same guard as usePersistedReducer for localStorage restores)
+          sync: {
+            ...importedSync,
+            workerUrl: importedSync.workerUrl || initialState.sync.workerUrl,
+          },
         };
       } catch (e) {
         // Edge case : JSON malformé → on retourne l'état actuel inchangé

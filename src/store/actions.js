@@ -5,6 +5,7 @@ export const ActionTypes = {
   ADD_WISH: 'ADD_WISH',
   ADD_THREE_STAR: 'ADD_THREE_STAR',
   UNDO_LAST_WISH: 'UNDO_LAST_WISH',
+  UPDATE_WISH: 'UPDATE_WISH',
   SET_ACTIVE_BANNER: 'SET_ACTIVE_BANNER',
   UPDATE_BANNER_METADATA: 'UPDATE_BANNER_METADATA',
   UPDATE_WISHLIST: 'UPDATE_WISHLIST',
@@ -31,6 +32,11 @@ export const addThreeStar = (banner) => ({
 export const undoLastWish = (banner) => ({
   type: ActionTypes.UNDO_LAST_WISH,
   payload: { banner },
+});
+
+export const updateWish = (bannerKey, wishId, patch) => ({
+  type: ActionTypes.UPDATE_WISH,
+  payload: { bannerKey, wishId, patch },
 });
 
 export const setActiveBanner = (banner) => ({

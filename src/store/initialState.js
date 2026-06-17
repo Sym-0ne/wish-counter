@@ -1,6 +1,4 @@
-// État initial. Version courante : 6.5 'Luna VI' (sortie 8 avril 2026)
-
-export const CURRENT_VERSION = '6.5';
+export const CURRENT_VERSION = '6.6';
 export const STORAGE_KEY = 'genshin-tracker-v1';
 
 export function createBannerState(bannerKey) {

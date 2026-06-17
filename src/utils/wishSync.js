@@ -48,6 +48,20 @@ const SYNC_TYPES = [
   { gachaType: '500', label: 'Chroniques' },
 ];
 
+// item_type strings for weapons across all game languages (default to 'character' if not in set)
+const WEAPON_ITEM_TYPES = new Set([
+  'Weapon',    // en
+  'Arme',      // fr
+  '武器',       // zh-cn, ja
+  'Waffe',     // de
+  'Arma',      // es, pt, it
+  'Оружие',    // ru
+  'อาวุธ',     // th
+  'Vũ khí',    // vi
+  'Senjata',   // id
+  '무기',       // ko
+]);
+
 function parseApiWish(apiWish, bannerKey) {
   // "2026-05-15 14:23:45" → timestamp ms
   const ts = new Date(apiWish.time.replace(' ', 'T')).getTime();
@@ -58,7 +72,7 @@ function parseApiWish(apiWish, bannerKey) {
     bannerKey,
     rank: parseInt(apiWish.rank_type, 10),
     name: apiWish.name,
-    itemType: apiWish.item_type === 'Character' ? 'character' : 'weapon',
+    itemType: WEAPON_ITEM_TYPES.has(apiWish.item_type) ? 'weapon' : 'character',
     featured: null,   // Inconnu via API — pityRules le gère proprement
     source: 'api',
   };

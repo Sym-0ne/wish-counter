@@ -101,9 +101,9 @@ export function BannerInfo({ bannerKey, banner, onChange, onOpenSync }) {
         // Portraits: always fill if missing (feature may have been added after data was set)
         if (remote.featuredPortrait && !m.featuredPortrait)  patch.featuredPortrait  = remote.featuredPortrait;
         if (remote.featured2Portrait && !m.featured2Portrait) patch.featured2Portrait = remote.featured2Portrait;
-        // Names: only refresh if stale
-        if (isStale && remote.featured)  patch.featured  = remote.featured;
-        if (isStale && remote.featured2) patch.featured2 = remote.featured2;
+        // Names: fill if missing (save may predate featured2 field), refresh if stale
+        if (remote.featured && (!m.featured || isStale))   patch.featured  = remote.featured;
+        if (remote.featured2 && (!m.featured2 || isStale)) patch.featured2 = remote.featured2;
       }
 
       // Dates/version/name: only refresh if stale
