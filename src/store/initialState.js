@@ -37,8 +37,9 @@ export const initialState = {
     // VITE_WORKER_URL is injected at build time from the WORKER_URL GitHub secret.
     // Users don't need to configure this — the maintainer deploys one shared Worker.
     workerUrl: import.meta.env.VITE_WORKER_URL || '',
-    authkeyUrl: '',   // URL complète avec authkey (expire ~24h)
-    lastSync: null,   // ISO string de la dernière sync réussie
+    authkeyUrl: '',    // URL complète avec authkey (expire ~24h)
+    lastSync: null,    // ISO string de la dernière sync réussie
+    githubToken: '',   // Fine-grained PAT pour écrire banners-upcoming.json
   },
   versionFilter: null, // null = toutes versions, sinon string ex: "6.5"
   // Wishlist structurée globale (indépendante des bannières)

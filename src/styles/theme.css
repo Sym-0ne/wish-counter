@@ -1594,28 +1594,30 @@ h1, h2, h3, h4 {
   transition: border-color 0.2s;
 }
 .ub-card:hover { border-color: var(--border-hover); }
-.ub-card__portrait-wrap {
+.ub-card__portraits {
   flex-shrink: 0;
+  display: flex;
+  gap: 4px;
+}
+.ub-card__portrait {
   width: 48px;
   height: 48px;
   border-radius: 8px;
-  overflow: hidden;
-  background: rgba(255,255,255,0.05);
-}
-.ub-card__portrait {
-  width: 100%;
-  height: 100%;
   object-fit: cover;
   object-position: top center;
+  background: rgba(255,255,255,0.05);
+  display: block;
 }
 .ub-card__portrait--placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--muted);
   font-size: 1.3rem;
-  width: 100%;
-  height: 100%;
 }
 .ub-card__body {
   display: flex;
@@ -1650,4 +1652,107 @@ h1, h2, h3, h4 {
   font-size: 0.72rem;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
+}
+.ub-card__name-sep { color: var(--muted); }
+.ub-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.ub-card__spin { color: var(--muted); margin-left: 4px; }
+.ub-card--editing {
+  flex-direction: column;
+  align-items: stretch;
+}
+.ub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.ub-empty {
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 12px;
+}
+.ub-token-hint {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin: 4px 0 0;
+  font-style: italic;
+}
+.ub-sync-msg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-top: 8px;
+}
+.ub-sync-msg--ok  { background: rgba(80,200,80,0.1);  color: var(--success); border: 1px solid var(--success); }
+.ub-sync-msg--err { background: rgba(200,60,60,0.1);  color: var(--danger);  border: 1px solid var(--danger); }
+.ub-sync-btn { margin-top: 10px; width: 100%; justify-content: center; }
+
+/* Formulaire ajout/édition */
+.ub-form {
+  padding: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+.ub-form__row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ub-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 100px;
+}
+.ub-form__field--grow { flex: 1; }
+.ub-form__label {
+  font-size: 0.68rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.ub-form__input,
+.ub-form__select {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+  padding: 6px 8px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+.ub-form__input:focus,
+.ub-form__select:focus { outline: none; border-color: var(--gold); }
+.ub-form__select option { background: #0b1426; }
+.ub-form__actions {
+  display: flex;
+  gap: 8px;
+}
+.btn--sm {
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  gap: 5px;
+}
+.btn--icon {
+  padding: 4px 6px;
+  min-width: unset;
 }

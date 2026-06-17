@@ -9,6 +9,7 @@ import { syncAllBanners, countNewWishes } from '../utils/wishSync';
 export function SyncConfig({ sync, banners, onImportSynced, onUpdateSyncConfig }) {
   const [workerUrl, setWorkerUrl] = useState(sync.workerUrl || '');
   const [authkeyUrl, setAuthkeyUrl] = useState(sync.authkeyUrl || '');
+  const [githubToken, setGithubToken] = useState(sync.githubToken || '');
   const [syncing, setSyncing] = useState(false);
   const [progress, setProgress] = useState('');
   const [result, setResult] = useState(null); // { ok: bool, message: string }
@@ -45,7 +46,11 @@ export function SyncConfig({ sync, banners, onImportSynced, onUpdateSyncConfig }
   }
 
   function handleSave() {
-    onUpdateSyncConfig({ workerUrl: workerUrl.trim(), authkeyUrl: authkeyUrl.trim() });
+    onUpdateSyncConfig({
+      workerUrl:    workerUrl.trim(),
+      authkeyUrl:   authkeyUrl.trim(),
+      githubToken:  githubToken.trim(),
+    });
   }
 
   return (
@@ -99,6 +104,22 @@ export function SyncConfig({ sync, banners, onImportSynced, onUpdateSyncConfig }
         />
         <small style={{ color: 'var(--muted)', fontSize: '11px' }}>
           L'authkey n'est pas transmise à des tiers — elle transite uniquement vers ton propre Worker.
+        </small>
+      </div>
+
+      <div className="modal__field">
+        <label>Token GitHub (bannières à venir)</label>
+        <input
+          type="password"
+          placeholder="github_pat_…"
+          value={githubToken}
+          onChange={(e) => setGithubToken(e.target.value)}
+          disabled={syncing}
+          autoComplete="off"
+        />
+        <small style={{ color: 'var(--muted)', fontSize: '11px' }}>
+          Fine-grained PAT avec "Contents: Read &amp; Write" sur le repo wish-counter.
+          Utilisé uniquement pour éditer <code>banners-upcoming.json</code>.
         </small>
       </div>
 

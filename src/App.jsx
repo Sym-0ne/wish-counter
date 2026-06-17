@@ -131,7 +131,7 @@ export default function App({ profileId = 'default', profileProps = {} }) {
               }
               onOpenSync={() => setSyncOpen(true)}
             />
-            <UpcomingBanners />
+            <UpcomingBanners githubToken={state.sync.githubToken} />
             <PityCard
               banner={activeBanner}
               bannerKey={activeKey}

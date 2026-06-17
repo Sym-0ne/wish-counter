@@ -8,14 +8,15 @@
  * Portrait images: enka.network (always up-to-date with game files), fallback genshin.jmp.blue
  */
 
-import { writeFileSync, existsSync } from 'fs';
+import { writeFileSync, existsSync, readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { createContext, Script } from 'vm';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const OUT_FILE  = join(__dirname, '../../public/banners-current.json');
-const HIST_FILE = join(__dirname, '../../public/banners-history.json');
+const OUT_FILE      = join(__dirname, '../../public/banners-current.json');
+const HIST_FILE     = join(__dirname, '../../public/banners-history.json');
+const UPCOMING_FILE = join(__dirname, '../../public/banners-upcoming.json');
 
 const BANNERS_JS_URL =
   'https://raw.githubusercontent.com/MadeBaruna/paimon-moe/main/src/data/banners.js';
@@ -309,6 +310,37 @@ async function main() {
 
   writeFileSync(OUT_FILE, JSON.stringify(result, null, 2), 'utf8');
   console.log(`Wrote ${OUT_FILE}`);
+
+  // ── Clean up banners-upcoming.json — remove entries now covered by official data ──
+  // When a banner goes live on paimon.moe, the corresponding manual leak entry is stale.
+  if (existsSync(UPCOMING_FILE)) {
+    try {
+      const upcomingRaw  = JSON.parse(readFileSync(UPCOMING_FILE, 'utf8'));
+      const activeFeatured = new Set(
+        [
+          characterData?.featured,
+          characterData?.featured2,
+          weaponData?.featured,
+          weaponData?.featured2,
+          chronicledData?.featured,
+        ].filter(Boolean).map((n) => n.toLowerCase().replace(/\s/g, ''))
+      );
+
+      const cleaned = upcomingRaw.filter((entry) => {
+        const name = (entry.featured || '').toLowerCase().replace(/\s/g, '');
+        const isNowCurrent = activeFeatured.has(name);
+        if (isNowCurrent) console.log(`  ✓ Removing stale upcoming entry: ${entry.featured} (now current)`);
+        return !isNowCurrent;
+      });
+
+      if (cleaned.length !== upcomingRaw.length) {
+        writeFileSync(UPCOMING_FILE, JSON.stringify(cleaned, null, 2) + '\n', 'utf8');
+        console.log(`Updated ${UPCOMING_FILE} (removed ${upcomingRaw.length - cleaned.length} stale entries)`);
+      }
+    } catch (err) {
+      console.warn(`  ⚠ Could not clean banners-upcoming.json: ${err.message}`);
+    }
+  }
 
   // ── History file (all phases, for BannerHistory timestamp-matching) ───────
   // Paimon.moe stocke les dates en UTC+8 sans suffixe timezone.
