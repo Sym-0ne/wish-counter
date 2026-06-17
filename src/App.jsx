@@ -26,6 +26,7 @@ import { AllBannersTimeline } from './components/AllBannersTimeline';
 export default function App({ profileId = 'default', profileProps = {} }) {
   const [state, dispatch] = usePersistedReducer(profileId);
   const [view, setView] = useState('banner');
+  const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [wishModalOpen, setWishModalOpen] = useState(false);
   const [addRank, setAddRank] = useState(5);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -142,6 +143,7 @@ export default function App({ profileId = 'default', profileProps = {} }) {
                 dispatch(A.updateBannerMetadata(activeKey, metadata))
               }
               onOpenSync={() => setSyncOpen(true)}
+              onOpenHistory={() => setHistoryModalOpen(true)}
             />
             <UpcomingBanners
               workerUrl={state.sync.workerUrl}
@@ -183,10 +185,18 @@ export default function App({ profileId = 'default', profileProps = {} }) {
               onChange={(wishlist) => dispatch(A.updateWishlist(activeKey, wishlist))}
             />
           </div>
-          <div className="app__col app__col--full">
-            <AllBannersTimeline />
-          </div>
         </main>
+      )}
+
+      {historyModalOpen && (
+        <div className="modal-backdrop" onClick={() => setHistoryModalOpen(false)}>
+          <div
+            className="modal modal--wide"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <AllBannersTimeline onClose={() => setHistoryModalOpen(false)} />
+          </div>
+        </div>
       )}
 
       {view === 'stats' && (

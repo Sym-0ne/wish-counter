@@ -595,6 +595,10 @@ h1, h2, h3, h4 {
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
   position: relative;
 }
+.modal--wide {
+  max-width: 860px;
+  max-height: 85vh;
+}
 /* Liseré or en haut de la modale */
 .modal::before {
   content: '';

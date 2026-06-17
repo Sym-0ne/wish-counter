@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { History } from 'lucide-react';
+import { History, X } from 'lucide-react';
 import { getAllCharBanners, bustAllBannersCache } from '../utils/allBannersFetch';
 
 const STATUS_CONFIG = {
@@ -30,7 +30,7 @@ function MiniPortrait({ name, src }) {
   );
 }
 
-export function AllBannersTimeline() {
+export function AllBannersTimeline({ onClose }) {
   const [entries, setEntries] = useState(null);
   const [expanded, setExpanded] = useState(false);
 
@@ -55,12 +55,19 @@ export function AllBannersTimeline() {
   const visible = expanded ? entries : [...future, ...past.slice(0, 8)];
 
   return (
-    <section className="card abt-section">
-      <h3 className="card__title">
-        <History size={18} /> Historique des bannières perso
-      </h3>
+    <section className={onClose ? undefined : 'card abt-section'}>
+      <div className="modal__header" style={{ marginBottom: '8px' }}>
+        <h3 className="modal__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <History size={18} /> Historique des bannières perso
+        </h3>
+        {onClose && (
+          <button className="modal__close" onClick={onClose} aria-label="Fermer">
+            <X size={18} />
+          </button>
+        )}
+      </div>
 
-      <div className="abt-list">
+      <div className="abt-list" style={onClose ? { padding: '0 1.5rem' } : undefined}>
         {visible.map((b, i) => {
           const cfg = STATUS_CONFIG[b.status] ?? STATUS_CONFIG.past;
           const chars = [
@@ -123,6 +130,7 @@ export function AllBannersTimeline() {
       {past.length > 8 && (
         <button
           className="btn btn--ghost btn--sm abt-expand"
+          style={onClose ? { margin: '0.5rem 1.5rem 1.5rem' } : undefined}
           onClick={() => setExpanded((v) => !v)}
         >
           {expanded

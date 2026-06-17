@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { History } from 'lucide-react';
 import { BANNER_CONFIG } from '../utils/banners';
 import {
   getCharacterList,
@@ -73,7 +74,7 @@ function FeaturedField({ label, value, placeholder, isWeapon, directPortrait, on
   );
 }
 
-export function BannerInfo({ bannerKey, banner, onChange, onOpenSync }) {
+export function BannerInfo({ bannerKey, banner, onChange, onOpenSync, onOpenHistory }) {
   const cfg = BANNER_CONFIG[bannerKey];
   const m = banner.metadata;
   const [autoFilled, setAutoFilled] = useState(false);
@@ -180,6 +181,14 @@ export function BannerInfo({ bannerKey, banner, onChange, onOpenSync }) {
             ↻ expiré
           </button>
         )}
+        <button
+          className="btn btn--ghost btn--icon"
+          title="Historique des bannières"
+          onClick={onOpenHistory}
+          style={{ marginLeft: autoFilled || (isStale && hasAnyData) ? '0' : 'auto', flexShrink: 0 }}
+        >
+          <History size={14} />
+        </button>
       </div>
 
       <div className="banner-info__grid">
