@@ -1,0 +1,17 @@
+# wrangler.toml — déploiement via CLI (optionnel, le dashboard suffit aussi)
+# npm install -g wrangler && wrangler login && wrangler deploy
+
+name = "genshin-wish-sync"
+main = "worker.js"
+compatibility_date = "2024-09-01"
+
+# KV namespace — crée-le d'abord dans le dashboard (Workers & Pages → KV)
+# puis remplace l'id ci-dessous par celui fourni par Cloudflare
+[[kv_namespaces]]
+binding = "UPCOMING_KV"
+id      = "REMPLACE_PAR_TON_KV_ID"
+
+# Variables d'environnement — à définir via le dashboard ou :
+# wrangler secret put GITHUB_TOKEN
+# wrangler secret put ADMIN_SECRET
+# (ne les mets JAMAIS dans ce fichier si tu le commites)

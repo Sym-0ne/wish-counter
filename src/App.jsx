@@ -143,7 +143,11 @@ export default function App({ profileId = 'default', profileProps = {} }) {
               }
               onOpenSync={() => setSyncOpen(true)}
             />
-            <UpcomingBanners githubToken={state.sync.githubToken} />
+            <UpcomingBanners
+              workerUrl={state.sync.workerUrl}
+              upcomingUser={state.sync.upcomingUser}
+              upcomingPassword={state.sync.upcomingPassword}
+            />
             <PityCard
               banner={activeBanner}
               bannerKey={activeKey}

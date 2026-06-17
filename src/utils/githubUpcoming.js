@@ -61,3 +61,64 @@ export function nameToPortrait(name) {
     .replace(/^\w/, (c) => c.toUpperCase());
   return `https://enka.network/ui/UI_AvatarIcon_${pascal}.png`;
 }
+
+/**
+ * Writes entries via the Cloudflare Worker (recommended for multi-user).
+ * The GITHUB_TOKEN never leaves the Worker.
+ */
+export async function writeViaWorker(workerUrl, username, password, entries) {
+  if (!workerUrl) throw new Error('Worker URL non configurée dans Paramètres.');
+  const resp = await fetch(`${workerUrl.replace(/\/$/, '')}/upcoming/write`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password, entries }),
+    signal: AbortSignal.timeout(12000),
+  });
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(data.error || `Worker HTTP ${resp.status}`);
+  return data;
+}
+
+/** Admin: add a user via the Worker. */
+export async function adminAddUser(workerUrl, adminSecret, username, password, role = 'user') {
+  const resp = await fetch(`${workerUrl.replace(/\/$/, '')}/upcoming/admin/users`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ adminSecret, username, password, role }),
+    signal: AbortSignal.timeout(10000),
+  });
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(data.error || `Worker HTTP ${resp.status}`);
+  return data;
+}
+
+/** Admin: delete a user via the Worker. */
+export async function adminDeleteUser(workerUrl, adminSecret, username) {
+  const resp = await fetch(`${workerUrl.replace(/\/$/, '')}/upcoming/admin/users`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ adminSecret, username }),
+    signal: AbortSignal.timeout(10000),
+  });
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(data.error || `Worker HTTP ${resp.status}`);
+  return data;
+}
+
+/** Admin: list all users. */
+export async function adminListUsers(workerUrl, adminSecret) {
+  const url = `${workerUrl.replace(/\/$/, '')}/upcoming/admin/users?adminSecret=${encodeURIComponent(adminSecret)}`;
+  const resp = await fetch(url, { signal: AbortSignal.timeout(10000) });
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(data.error || `Worker HTTP ${resp.status}`);
+  return data; // array of { username, role, createdAt }
+}
+
+/** Admin: list audit logs. */
+export async function adminGetLogs(workerUrl, adminSecret, limit = 50) {
+  const url = `${workerUrl.replace(/\/$/, '')}/upcoming/admin/logs?adminSecret=${encodeURIComponent(adminSecret)}&limit=${limit}`;
+  const resp = await fetch(url, { signal: AbortSignal.timeout(10000) });
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(data.error || `Worker HTTP ${resp.status}`);
+  return data; // array of log entries
+}

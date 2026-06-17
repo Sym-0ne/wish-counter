@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { CalendarClock, Plus, Pencil, Trash2, X, Check, Github, Loader } from 'lucide-react';
 import { getUpcomingBanners } from '../utils/bannerFetch';
-import { readUpcomingFromGitHub, writeUpcomingToGitHub, nameToPortrait } from '../utils/githubUpcoming';
+import { writeViaWorker, nameToPortrait } from '../utils/githubUpcoming';
 
 const BANNER_LABEL = {
   character:  'Perso',
@@ -134,7 +134,7 @@ function EntryForm({ initial, onSave, onCancel }) {
   );
 }
 
-export function UpcomingBanners({ githubToken }) {
+export function UpcomingBanners({ workerUrl, upcomingUser, upcomingPassword }) {
   const [entries, setEntries] = useState(null);   // null = loading
   const [adding, setAdding]   = useState(false);
   const [editIdx, setEditIdx] = useState(null);   // index being edited
@@ -153,11 +153,8 @@ export function UpcomingBanners({ githubToken }) {
     setSyncing(true);
     setSyncMsg(null);
     try {
-      const { sha } = await readUpcomingFromGitHub(githubToken);
-      // Only write the "manual" entries (confidence != 'officiel' from auto-source) or all entries
-      // We only manage the manual banners-upcoming.json, not the auto-detected ones
       const manual = updatedEntries.filter((e) => !(e.source === 'paimon.moe' && e.confidence === 'officiel'));
-      await writeUpcomingToGitHub(githubToken, manual, sha);
+      await writeViaWorker(workerUrl, upcomingUser, upcomingPassword, manual);
       setSyncMsg({ ok: true, text: 'Synchronisé avec GitHub ✓' });
     } catch (err) {
       setSyncMsg({ ok: false, text: `Erreur : ${err.message}` });
@@ -209,7 +206,7 @@ export function UpcomingBanners({ githubToken }) {
 
   if (entries === null) return null;
 
-  const hasToken = !!githubToken;
+  const hasToken = !!(workerUrl && upcomingUser && upcomingPassword);
 
   return (
     <section className="card ub-section">
@@ -228,7 +225,7 @@ export function UpcomingBanners({ githubToken }) {
 
       {!hasToken && entries.length > 0 && (
         <p className="ub-token-hint">
-          Configure un token GitHub dans Paramètres pour éditer depuis le site.
+          Configure ton identifiant dans Paramètres → Synchronisation pour éditer.
         </p>
       )}
 
