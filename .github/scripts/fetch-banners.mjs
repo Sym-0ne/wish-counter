@@ -39,6 +39,35 @@ function slugToName(slug) {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+/** Lowercase + strip spaces/dashes/apostrophes for fuzzy name matching */
+function normName(name) {
+  return (name || '').toLowerCase().replace(/[\s\-']/g, '');
+}
+
+/**
+ * Fetches weapon name → enka portrait URL map from gi.yatta.moe.
+ * Returns {} on failure (non-fatal).
+ */
+async function fetchYattaWeaponIcons() {
+  try {
+    const resp = await fetch('https://gi.yatta.moe/api/v2/en/weapon', {
+      headers: { 'User-Agent': 'wish-counter-banners-fetch/1.0' },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const { data } = await resp.json();
+    const lookup = {};
+    for (const w of Object.values(data?.items ?? {})) {
+      if (w.name && w.icon) lookup[normName(w.name)] = `${ENKA_BASE}/${w.icon}_Awaken.png`;
+    }
+    console.log(`  Fetched ${Object.keys(lookup).length} weapon icons from yatta.moe`);
+    return lookup;
+  } catch (err) {
+    console.warn(`  ⚠ Could not fetch yatta weapon icons: ${err.message}`);
+    return {};
+  }
+}
+
 async function checkUrl(url) {
   try {
     const resp = await fetch(url, { method: 'HEAD', signal: AbortSignal.timeout(6000) });
@@ -146,6 +175,9 @@ async function main() {
     console.warn('  No active character banner found — patch schedule may be missing in paimon.moe data');
   }
 
+  // ── Weapon icons from yatta.moe (for portrait URLs) ──────────────────────
+  const weaponIconLookup = await fetchYattaWeaponIcons();
+
   // ── Weapon banner ─────────────────────────────────────────────────────────
   const weaponBanner = findCurrentBanner(
     (banners.weapons ?? []).filter((b) => !b.end?.startsWith('2200'))
@@ -154,14 +186,26 @@ async function main() {
 
   if (weaponBanner) {
     const slugs = weaponBanner.featured ?? [];
+    const w1Slug = slugs[0] ?? null;
+    const w2Slug = slugs[1] ?? null;
+    const w1Name = w1Slug ? slugToName(w1Slug) : null;
+    const w2Name = w2Slug ? slugToName(w2Slug) : null;
     weaponData = {
-      featuredWeapons:     slugs.slice(0, 2).map(slugToName),
-      featuredWeaponSlugs: slugs.slice(0, 2),
+      featured:          w1Name,
+      featuredSlug:      w1Slug,
+      featuredPortrait:  w1Name ? (weaponIconLookup[normName(w1Name)] ?? null) : null,
+      featured2:         w2Name,
+      featured2Slug:     w2Slug,
+      featured2Portrait: w2Name ? (weaponIconLookup[normName(w2Name)] ?? null) : null,
+      // kept for BannerInfo.jsx compatibility
+      featuredWeapons:     [w1Name, w2Name].filter(Boolean),
+      featuredWeaponSlugs: [w1Slug, w2Slug].filter(Boolean),
       endDate:   toISODate(weaponBanner.end),
       startDate: toISODate(weaponBanner.start),
       version:   weaponBanner.version ?? null,
     };
     console.log(`  → Weapon: ${weaponData.featuredWeapons.join(' + ') || '?'} (until ${weaponData.endDate})`);
+    console.log(`  → Weapon portraits: ${weaponData.featuredPortrait ? '✓' : '✗'} / ${weaponData.featured2Portrait ? '✓' : '✗'}`);
   }
 
   // ── Chronicled banner ─────────────────────────────────────────────────────
@@ -236,13 +280,17 @@ async function main() {
         const slugs = b.featured ?? [];
         const w1 = slugs[0] ?? null;
         const w2 = slugs[1] ?? null;
+        const w1Name = w1 ? slugToName(w1) : null;
+        const w2Name = w2 ? slugToName(w2) : null;
         return {
           startMs: toMs(b.start),
           endMs:   toMs(b.end),
-          featured:      w1 ? slugToName(w1) : null,
-          featuredSlug:  w1,
-          featured2:     w2 ? slugToName(w2) : null,
-          featured2Slug: w2,
+          featured:           w1Name,
+          featuredSlug:       w1,
+          featuredPortrait:   w1Name ? (weaponIconLookup[normName(w1Name)] ?? null) : null,
+          featured2:          w2Name,
+          featured2Slug:      w2,
+          featured2Portrait:  w2Name ? (weaponIconLookup[normName(w2Name)] ?? null) : null,
           version:    b.version ?? null,
           bannerName: b.name   ?? null,
         };

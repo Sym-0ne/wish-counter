@@ -2,8 +2,8 @@
  * Accès aux données de personnages/armes Genshin Impact.
  *
  * Sources :
- *  - gi.yatta.moe  : liste complète + à jour (tous les personnages dont v5/v6+)
- *  - genshin.jmp.blue : fallback (s'arrête à ~v4.7, ~92 personnages)
+ *  - gi.yatta.moe  : liste complète + à jour (personnages et armes v5/v6+)
+ *  - genshin.jmp.blue : fallback (s'arrête à ~v4.7)
  *
  * Chaque item retourné : { slug, name, rarity, portraitUrl }
  */
@@ -42,6 +42,23 @@ async function fetchYattaCharacters() {
     }));
 }
 
+async function fetchYattaWeapons() {
+  const resp = await fetch(`${YATTA_BASE}/en/weapon`, {
+    signal: AbortSignal.timeout(10000),
+  });
+  if (!resp.ok) throw new Error(`yatta weapons: HTTP ${resp.status}`);
+  const { data } = await resp.json();
+  return Object.values(data?.items ?? {})
+    .filter((w) => w.id && w.name && w.icon)
+    .map((w) => ({
+      slug: w.icon,
+      name: w.name,
+      rarity: w.rank,
+      // _Awaken = variante lumineuse (4★/5★) ; onError dans l'UI cache si absente (3★)
+      portraitUrl: `https://enka.network/ui/${w.icon}_Awaken.png`,
+    }));
+}
+
 // ── genshin.jmp.blue (fallback) ───────────────────────────────────────────
 
 async function fetchJmpCharacters() {
@@ -75,17 +92,21 @@ export async function getCharacterList() {
 export async function getWeaponList() {
   if (weapCache) return weapCache;
   try {
-    const resp = await fetch(`${JMP_BASE}/weapons/all`, { signal: AbortSignal.timeout(10000) });
-    if (!resp.ok) throw new Error(`jmp.blue weapons: HTTP ${resp.status}`);
-    const data = await resp.json();
-    weapCache = Object.entries(data).map(([slug, info]) => ({
-      slug,
-      name: info.name || slug,
-      rarity: info.rarity,
-      portraitUrl: `${JMP_BASE}/weapons/${slug}/icon`,
-    }));
+    weapCache = await fetchYattaWeapons();
   } catch {
-    weapCache = [];
+    try {
+      const resp = await fetch(`${JMP_BASE}/weapons/all`, { signal: AbortSignal.timeout(10000) });
+      if (!resp.ok) throw new Error(`jmp.blue weapons: HTTP ${resp.status}`);
+      const data = await resp.json();
+      weapCache = Object.entries(data).map(([slug, info]) => ({
+        slug,
+        name: info.name || slug,
+        rarity: info.rarity,
+        portraitUrl: `${JMP_BASE}/weapons/${slug}/icon`,
+      }));
+    } catch {
+      weapCache = [];
+    }
   }
   return weapCache;
 }
