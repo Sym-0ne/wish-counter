@@ -14,6 +14,7 @@ export function simulateBannerPulls({
   isGuaranteed,
   fatePoints,
   totalPulls,
+  rateFn = fiveStarRate,
 }, sims = 2000) {
   if (totalPulls <= 0) return 0;
   const cfg = BANNER_CONFIG[bannerKey];
@@ -28,7 +29,7 @@ export function simulateBannerPulls({
     let got = false;
 
     for (let i = 0; i < totalPulls; i++) {
-      const rate = fiveStarRate(p, bannerKey);
+      const rate = rateFn(p, bannerKey);
       p += 1;
 
       if (Math.random() < rate) {

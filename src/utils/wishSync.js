@@ -150,6 +150,7 @@ export async function syncAllBanners(workerUrl, authkeyUrl, existingBanners, onP
     }
 
     onProgress?.(`${label} : ${results[bannerKey].length} nouveau(x) vœu(x)`);
+    await new Promise(r => setTimeout(r, 300)); // espace les types de bannière (évite les bursts HoYoverse)
   }
 
   return results;

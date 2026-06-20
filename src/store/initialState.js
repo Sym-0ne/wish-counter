@@ -38,6 +38,7 @@ export const initialState = {
     // Users don't need to configure this — the maintainer deploys one shared Worker.
     workerUrl: import.meta.env.VITE_WORKER_URL || '',
     authkeyUrl: '',      // URL complète avec authkey (expire ~24h)
+    authkeyObtainedAt: null, // ISO string — moment où CETTE authkey a été collée (≠ lastSync)
     lastSync: null,      // ISO string de la dernière sync réussie
     // Auth pour l'édition des bannières à venir (via Cloudflare Worker)
     upcomingUser: '',

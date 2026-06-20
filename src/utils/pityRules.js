@@ -28,6 +28,19 @@ export function fiveStarRate(pity, bannerKey) {
 }
 
 /**
+ * Variante "pire cas" : ignore le ramp du soft pity, ne garde que le taux de base
+ * jusqu'au hard pity (où le 5★ est garanti). Sert de borne basse de comparaison
+ * face à fiveStarRate (qui elle modélise le vrai comportement avec soft pity).
+ */
+export function fiveStarRateNoSoftPity(pity, bannerKey) {
+  const cfg = BANNER_CONFIG[bannerKey];
+  if (!cfg) return BASE_5_RATE;
+  const nextPullPity = pity + 1;
+  if (nextPullPity >= cfg.hardPity5) return 1;
+  return BASE_5_RATE;
+}
+
+/**
  * Probabilité d'obtenir un 4★ ou plus à un pity4 donné.
  * Hard pity à 10 (10e tirage sans 4★/5★ garantit un 4★).
  */

@@ -1,17 +1,17 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { usePersistedReducer } from './hooks/usePersistedReducer';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useLuckScore, useStreak, useNameSuggestions } from './hooks/useDerivedStats';
 import * as A from './store/actions';
 import { fetchBannerInfoFromAuth } from './utils/gachaInfo';
 import { isBannerStale, getCurrentBanners } from './utils/bannerFetch';
+import { syncAllBanners } from './utils/wishSync';
 
 import { Header } from './components/Header';
 import { BannerInfo } from './components/BannerInfo';
 import { PityCard } from './components/PityCard';
 import { AddWishControls, AddWishModal } from './components/AddWishModal';
 import { WishHistory } from './components/WishHistory';
-import { ProbabilityCalc } from './components/ProbabilityCalc';
 import { Wishlist } from './components/Wishlist';
 import { StatsPanel } from './components/StatsPanel';
 import { ConstellationTracker } from './components/ConstellationTracker';
@@ -19,10 +19,13 @@ import { Settings } from './components/Settings';
 import { SyncModal } from './components/SyncModal';
 import { BannerHistory } from './components/BannerHistory';
 import { WishlistTab } from './components/WishlistTab';
-import { PrimoTracker } from './components/PrimoTracker';
+import { ResourceCalculator } from './components/ResourceCalculator';
 import { PullCostEstimator } from './components/PullCostEstimator';
 import { UpcomingBanners } from './components/UpcomingBanners';
 import { AllBannersTimeline } from './components/AllBannersTimeline';
+
+const TWO_HOURS = 2 * 60 * 60 * 1000;
+const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
 
 export default function App({ profileId = 'default', profileProps = {} }) {
   const [state, dispatch] = usePersistedReducer(profileId);
@@ -50,6 +53,10 @@ export default function App({ profileId = 'default', profileProps = {} }) {
     } catch { /* ignore */ }
     return '';
   });
+
+  // Ref toujours à jour — évite les closures obsolètes dans les intervals ci-dessous.
+  const stateRef = useRef(state);
+  useEffect(() => { stateRef.current = state; }, [state]);
 
   const activeKey = state.activeBanner;
   const activeBanner = state.banners[activeKey];
@@ -91,6 +98,47 @@ export default function App({ profileId = 'default', profileProps = {} }) {
       .catch(() => {}); // Best-effort — silent on expired authkey or network error
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.sync.lastSync]);
+
+  // Efface automatiquement l'authkey ~24h après sa collecte (durée de vie réelle côté HoYoverse).
+  useEffect(() => {
+    function checkExpiry() {
+      const { authkeyUrl, authkeyObtainedAt } = stateRef.current.sync;
+      if (!authkeyUrl || !authkeyObtainedAt) return;
+      const age = Date.now() - new Date(authkeyObtainedAt).getTime();
+      if (age > TWENTY_FOUR_HOURS) {
+        dispatch(A.updateSyncConfig({ authkeyUrl: '', authkeyObtainedAt: null }));
+      }
+    }
+    checkExpiry();
+    const id = setInterval(checkExpiry, 60 * 1000);
+    return () => clearInterval(id);
+  }, [dispatch]);
+
+  // Sync automatique toutes les 2h tant que l'authkey sauvegardée est encore valide (<24h).
+  // Espacer les syncs réduit le risque de "too many requests" côté API HoYoverse,
+  // surtout quand le Worker est partagé entre plusieurs utilisateurs.
+  useEffect(() => {
+    function tryAutoSync() {
+      const { workerUrl, authkeyUrl, authkeyObtainedAt, lastSync } = stateRef.current.sync;
+      if (!workerUrl || !authkeyUrl) return;
+      if (authkeyObtainedAt && Date.now() - new Date(authkeyObtainedAt).getTime() > TWENTY_FOUR_HOURS) return;
+
+      const sinceLast = lastSync ? Date.now() - new Date(lastSync).getTime() : Infinity;
+      if (sinceLast < TWO_HOURS) return;
+
+      setSyncing(true);
+      syncAllBanners(workerUrl, authkeyUrl, stateRef.current.banners, () => {})
+        .then((groups) => {
+          dispatch(A.importSyncedWishes(groups));
+          dispatch(A.updateSyncConfig({ lastSync: new Date().toISOString() }));
+        })
+        .catch(() => {}) // rate-limit / authkey expiré entre-temps — on retentera au prochain cycle
+        .finally(() => setSyncing(false));
+    }
+    tryAutoSync();
+    const id = setInterval(tryAutoSync, TWO_HOURS);
+    return () => clearInterval(id);
+  }, [dispatch]);
 
   const handleAddWish = useCallback(
     (wish) => dispatch(A.addWish(activeKey, wish)),
@@ -173,14 +221,13 @@ export default function App({ profileId = 'default', profileProps = {} }) {
           </div>
 
           <div className="app__col">
-            <ProbabilityCalc banner={activeBanner} bannerKey={activeKey} />
-            <PullCostEstimator banner={activeBanner} bannerKey={activeKey} />
-            <PrimoTracker
+            <ResourceCalculator
               primoTracker={state.primoTracker}
               banner={activeBanner}
               bannerKey={activeKey}
               onChange={(patch) => dispatch(A.updatePrimoTracker(patch))}
             />
+            <PullCostEstimator banner={activeBanner} bannerKey={activeKey} />
             <Wishlist
               bannerKey={activeKey}
               banner={activeBanner}

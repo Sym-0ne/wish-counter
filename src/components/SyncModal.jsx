@@ -66,6 +66,16 @@ export function SyncModal({ open, onClose, sync, banners, onImportSynced, onUpda
     }
   }, [open, authkeyUrl]);
 
+  // L'authkey sauvegardée expire ~24h après sa collecte (effacée automatiquement par App.jsx).
+  // Si ce clear externe survient pendant que cette modale est ouverte, on vide aussi le champ local.
+  const prevSyncAuthkey = useRef(sync.authkeyUrl);
+  useEffect(() => {
+    if (prevSyncAuthkey.current && !sync.authkeyUrl && authkeyUrl === prevSyncAuthkey.current) {
+      setAuthkeyUrl('');
+    }
+    prevSyncAuthkey.current = sync.authkeyUrl;
+  }, [sync.authkeyUrl, authkeyUrl]);
+
   if (!open) return null;
 
   const effectiveWorker = (customWorker.trim().startsWith('https://') ? customWorker.trim() : null) || workerUrl;
@@ -95,9 +105,12 @@ export function SyncModal({ open, onClose, sync, banners, onImportSynced, onUpda
       } catch { /* best-effort */ }
 
       onImportSynced(groups);
+      const trimmed = authkeyUrl.trim();
+      const isNewKey = trimmed !== sync.authkeyUrl;
       onUpdateSyncConfig({
         workerUrl: effectiveWorker,
-        authkeyUrl: authkeyUrl.trim(),
+        authkeyUrl: trimmed,
+        authkeyObtainedAt: isNewKey ? new Date().toISOString() : sync.authkeyObtainedAt,
         lastSync: new Date().toISOString(),
       });
       setResult({ ok: true, count: total, bannerNames });
