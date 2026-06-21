@@ -252,6 +252,45 @@ h1, h2, h3, h4 {
 }
 .header__actions { display: flex; gap: 0.5rem; }
 
+/* ========== MOBILE BOTTOM NAV ========== */
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 150;
+  background: rgba(5, 9, 20, 0.97);
+  border-top: 1px solid rgba(180, 148, 64, 0.22);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.6);
+  padding: 4px env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+.mobile-nav__item {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  min-height: 48px;
+  font-size: 0.66rem;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
+}
+.mobile-nav__item.active { color: var(--accent); background: rgba(200, 168, 75, 0.1); }
+
+@media (max-width: 720px) {
+  .mobile-nav { display: flex; }
+  .header__view-toggle { display: none; }
+  .header__title-text { display: none; }
+  .header__tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+  .app__main { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  .btn { min-height: 44px; }
+  .btn--icon { min-width: 44px; }
+}
+
 /* ========== CARD ========== */
 .card {
   background: var(--surface);

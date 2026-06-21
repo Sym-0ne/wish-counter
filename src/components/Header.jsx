@@ -63,80 +63,86 @@ function SyncButton({ sync, syncing, onOpenSync }) {
   );
 }
 
+const VIEW_NAV = [
+  { key: 'banner', label: 'Bannière', shortLabel: 'Vœux', Icon: Sparkles },
+  { key: 'stats', label: 'Stats', shortLabel: 'Stats', Icon: BarChart3 },
+  { key: 'collection', label: 'Collection', shortLabel: 'Collec.', Icon: Layers },
+  { key: 'history', label: 'Historique', shortLabel: 'Histo', Icon: History },
+  { key: 'wishlist', label: 'Wishlist', shortLabel: 'Wishlist', Icon: Star },
+];
+
+function MobileBottomNav({ view, onViewChange }) {
+  return (
+    <nav className="mobile-nav">
+      {VIEW_NAV.map(({ key, shortLabel, Icon }) => (
+        <button
+          key={key}
+          className={`mobile-nav__item ${view === key ? 'active' : ''}`}
+          onClick={() => onViewChange(key)}
+        >
+          <Icon size={18} />
+          <span>{shortLabel}</span>
+        </button>
+      ))}
+    </nav>
+  );
+}
+
 export function Header({ activeBanner, view, onBannerChange, onViewChange, onOpenSettings, onOpenSync, sync, syncing, profileProps }) {
   return (
-    <header className="header">
-      <div className="header__inner">
-        <h1 className="header__title">
-          <Sparkles size={20} />
-          Wish Tracker
-        </h1>
+    <>
+      <header className="header">
+        <div className="header__inner">
+          <h1 className="header__title">
+            <Sparkles size={20} />
+            <span className="header__title-text">Wish Tracker</span>
+          </h1>
 
-        {view === 'banner' && (
-          <div className="header__tabs">
-            {BANNER_KEYS.map((key) => (
-              <button
-                key={key}
-                className={`header__tab ${activeBanner === key ? 'active' : ''}`}
-                onClick={() => onBannerChange(key)}
-              >
-                {BANNER_CONFIG[key].label}
+          {view === 'banner' && (
+            <div className="header__tabs">
+              {BANNER_KEYS.map((key) => (
+                <button
+                  key={key}
+                  className={`header__tab ${activeBanner === key ? 'active' : ''}`}
+                  onClick={() => onBannerChange(key)}
+                >
+                  {BANNER_CONFIG[key].label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {view !== 'banner' && <div style={{ flex: 1 }} />}
+
+          <div className="header__view-toggle">
+            {VIEW_NAV.map(({ key, label, Icon }) => (
+              <button key={key} className={view === key ? 'active' : ''} onClick={() => onViewChange(key)}>
+                <Icon size={14} style={{ marginRight: 4 }} />
+                {label}
               </button>
             ))}
           </div>
-        )}
 
-        {view !== 'banner' && <div style={{ flex: 1 }} />}
+          <SyncButton sync={sync} syncing={syncing} onOpenSync={onOpenSync} />
+          <InstallButton />
 
-        <div className="header__view-toggle">
-          <button className={view === 'banner' ? 'active' : ''} onClick={() => onViewChange('banner')}>
-            <Sparkles size={14} style={{ marginRight: 4 }} />
-            Bannière
-          </button>
-          <button className={view === 'stats' ? 'active' : ''} onClick={() => onViewChange('stats')}>
-            <BarChart3 size={14} style={{ marginRight: 4 }} />
-            Stats
-          </button>
-          <button
-            className={view === 'collection' ? 'active' : ''}
-            onClick={() => onViewChange('collection')}
-          >
-            <Layers size={14} style={{ marginRight: 4 }} />
-            Collection
-          </button>
-          <button
-            className={view === 'history' ? 'active' : ''}
-            onClick={() => onViewChange('history')}
-          >
-            <History size={14} style={{ marginRight: 4 }} />
-            Historique
-          </button>
-          <button
-            className={view === 'wishlist' ? 'active' : ''}
-            onClick={() => onViewChange('wishlist')}
-          >
-            <Star size={14} style={{ marginRight: 4 }} />
-            Wishlist
+          {profileProps?.profiles && (
+            <ProfileBar
+              profiles={profileProps.profiles}
+              activeProfileId={profileProps.activeProfileId}
+              onSwitch={profileProps.onSwitch}
+              onCreate={profileProps.onCreate}
+              onRename={profileProps.onRename}
+              onDelete={profileProps.onDelete}
+            />
+          )}
+          <button className="btn btn--ghost btn--small" onClick={onOpenSettings} title="Réglages">
+            <SettingsIcon size={16} />
           </button>
         </div>
+      </header>
 
-        <SyncButton sync={sync} syncing={syncing} onOpenSync={onOpenSync} />
-        <InstallButton />
-
-        {profileProps?.profiles && (
-          <ProfileBar
-            profiles={profileProps.profiles}
-            activeProfileId={profileProps.activeProfileId}
-            onSwitch={profileProps.onSwitch}
-            onCreate={profileProps.onCreate}
-            onRename={profileProps.onRename}
-            onDelete={profileProps.onDelete}
-          />
-        )}
-        <button className="btn btn--ghost btn--small" onClick={onOpenSettings} title="Réglages">
-          <SettingsIcon size={16} />
-        </button>
-      </div>
-    </header>
+      <MobileBottomNav view={view} onViewChange={onViewChange} />
+    </>
   );
 }
