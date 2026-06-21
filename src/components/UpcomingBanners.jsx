@@ -1,8 +1,9 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { CalendarClock, Plus, Pencil, Trash2, X, Check, Github, Loader } from 'lucide-react';
 import { getUpcomingBanners, bustUpcomingCache } from '../utils/bannerFetch';
 import { bustAllBannersCache } from '../utils/allBannersFetch';
 import { writeViaWorker, nameToPortrait } from '../utils/githubUpcoming';
+import { getCharacterList, getWeaponList } from '../utils/genshinApi';
 
 const BANNER_LABEL = {
   character:  'Perso',
@@ -48,13 +49,31 @@ function Portrait({ name, portrait: overrideUrl }) {
 /** Form for adding or editing an entry. */
 function EntryForm({ initial, onSave, onCancel }) {
   const [form, setForm] = useState({ ...BLANK_ENTRY, ...initial });
+  const [charNames, setCharNames] = useState([]);
+  const [weaponNames, setWeaponNames] = useState([]);
+
+  useEffect(() => {
+    getCharacterList().then((list) =>
+      setCharNames(list.filter((c) => c.rarity === 5).map((c) => c.name))
+    );
+    getWeaponList().then((list) =>
+      setWeaponNames(list.filter((w) => w.rarity === 5).map((w) => w.name))
+    );
+  }, []);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
   const canSave = form.featured.trim();
+  const isWeaponBanner = form.bannerKey === 'weapon';
+  const nameOptions = isWeaponBanner ? weaponNames : charNames;
+  const datalistId = isWeaponBanner ? 'ub-weapon-names' : 'ub-char-names';
 
   return (
     <div className="ub-form">
+      <datalist id={datalistId}>
+        {nameOptions.map((n) => <option key={n} value={n} />)}
+      </datalist>
+
       <div className="ub-form__row">
         <div className="ub-form__field">
           <label className="ub-form__label">Bannière</label>
@@ -83,6 +102,7 @@ function EntryForm({ initial, onSave, onCancel }) {
           <input
             className="ub-form__input"
             placeholder="Sandrone"
+            list={datalistId}
             value={form.featured}
             onChange={(e) => set('featured', e.target.value)}
           />
@@ -92,6 +112,7 @@ function EntryForm({ initial, onSave, onCancel }) {
           <input
             className="ub-form__input"
             placeholder="Cyno (re-run)"
+            list={datalistId}
             value={form.featured2}
             onChange={(e) => set('featured2', e.target.value)}
           />
