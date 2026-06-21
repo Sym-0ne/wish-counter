@@ -560,6 +560,50 @@ h1, h2, h3, h4 {
 .luck-score__label { display: flex; flex-direction: column; gap: 2px; }
 .luck-score__label strong { font-size: 0.9rem; color: var(--accent); }
 .luck-score__label span  { font-size: 0.77rem; color: var(--muted); }
+.luck-score-group { display: flex; flex-direction: column; gap: 0.6rem; }
+
+/* ========== PITY BASELINE FORM ========== */
+.pity-baseline-form {
+  margin: 0.5rem 0 1rem;
+  padding: 0.75rem;
+  background: rgba(5, 9, 20, 0.7);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.pity-baseline-form__hint {
+  font-size: 0.74rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+}
+.pity-baseline-form__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.pity-baseline-form__row label { font-size: 0.8rem; color: var(--text); }
+.pity-baseline-form__row input,
+.pity-baseline-form__row select {
+  width: 90px;
+  background: rgba(5, 9, 20, 0.9);
+  border: 1px solid rgba(180, 148, 64, 0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  color: var(--text);
+  font-size: 0.85rem;
+}
+.pity-baseline-form__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text);
+}
+.pity-baseline-form__actions { display: flex; gap: 0.5rem; }
 
 /* ========== ADD WISH ========== */
 .add-wish { display: flex; gap: 0.5rem; flex-wrap: wrap; }

@@ -9,6 +9,7 @@ import {
   weaponIconUrl,
 } from '../utils/genshinApi';
 import { getCurrentBanners, isBannerStale } from '../utils/bannerFetch';
+import { DateInputFR } from './DateInputFR';
 
 // Loads and caches the portrait URL for a character or weapon name.
 // `directUrl` bypasses the lookup and uses the provided URL directly.
@@ -249,11 +250,7 @@ export function BannerInfo({ bannerKey, banner, onChange, onOpenSync, onOpenHist
 
         <div className="banner-info__field">
           <label>Date de fin</label>
-          <input
-            type="date"
-            value={m.endDate || ''}
-            onChange={(e) => update({ endDate: e.target.value })}
-          />
+          <DateInputFR value={m.endDate || ''} onChange={(v) => update({ endDate: v })} />
         </div>
       </div>
     </div>

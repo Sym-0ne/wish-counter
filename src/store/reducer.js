@@ -18,6 +18,7 @@ function rebuildBanner(banner, bannerKey) {
   const { taggedHistory, pity4, pity5, isGuaranteed, fatePoints } = processHistory(
     banner.history,
     bannerKey,
+    banner.pityBaseline,
   );
   return {
     ...banner,
@@ -141,6 +142,20 @@ export function reducer(state, action) {
             metadata: { ...banner.metadata, ...metadata },
           },
         },
+      };
+    }
+
+    case ActionTypes.UPDATE_PITY_BASELINE: {
+      const { banner: bannerKey, baseline } = action.payload;
+      const banner = state.banners[bannerKey];
+      if (!banner) return state;
+      const newBanner = rebuildBanner(
+        { ...banner, pityBaseline: { ...banner.pityBaseline, ...baseline } },
+        bannerKey,
+      );
+      return {
+        ...state,
+        banners: { ...state.banners, [bannerKey]: newBanner },
       };
     }
 

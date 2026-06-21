@@ -204,6 +204,7 @@ export default function App({ profileId = 'default', profileProps = {} }) {
               bannerKey={activeKey}
               luckScore={luckScore}
               streak={streak}
+              onUpdateBaseline={(baseline) => dispatch(A.updatePityBaseline(activeKey, baseline))}
             />
             <AddWishControls
               onOpenModal={openAddModal}

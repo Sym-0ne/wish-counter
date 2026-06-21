@@ -158,8 +158,8 @@ function GlobalStats({ banners }) {
       if (!b) continue;
       byBanner[key] = b.history.length;
       total += b.history.length;
-      let pity = 0;
-      let isGuaranteed = false;
+      let pity = b.pityBaseline?.pity5 ?? 0;
+      let isGuaranteed = b.pityBaseline?.isGuaranteed ?? false;
       for (const wish of b.history) {
         pity += 1;
         if (wish.rank === 5) {
@@ -392,7 +392,7 @@ function VersionHistory({ banners }) {
       const b = banners[key];
       if (!b) continue;
       const cfg = BANNER_CONFIG[key];
-      let isGuaranteed = false;
+      let isGuaranteed = b.pityBaseline?.isGuaranteed ?? false;
 
       for (const wish of b.history) {
         const ver = wish.version || 'sync';

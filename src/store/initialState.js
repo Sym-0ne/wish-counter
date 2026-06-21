@@ -7,6 +7,10 @@ export function createBannerState(bannerKey) {
     pity5: 0,
     isGuaranteed: false,
     fatePoints: 0, // utilisé uniquement pour weapon
+    // Point de départ utilisé pour recalculer pity4/pity5/isGuaranteed/fatePoints depuis
+    // l'historique. Sert à corriger un historique synchronisé en partie (vœux manquants
+    // avant le début du log) sans fausser le pity réel ni les scores de luck.
+    pityBaseline: { pity5: 0, isGuaranteed: false, fatePoints: 0 },
     history: [],
     metadata: {
       featured: '', // ex: "Néfer"

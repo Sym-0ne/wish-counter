@@ -4,6 +4,7 @@ import { getUpcomingBanners, bustUpcomingCache } from '../utils/bannerFetch';
 import { bustAllBannersCache } from '../utils/allBannersFetch';
 import { writeViaWorker, nameToPortrait } from '../utils/githubUpcoming';
 import { getCharacterList, getWeaponList } from '../utils/genshinApi';
+import { DateInputFR } from './DateInputFR';
 
 const BANNER_LABEL = {
   character:  'Perso',
@@ -136,11 +137,11 @@ function EntryForm({ initial, onSave, onCancel }) {
       <div className="ub-form__row">
         <div className="ub-form__field">
           <label className="ub-form__label">Début</label>
-          <input type="date" className="ub-form__input" value={form.startDate || ''} onChange={(e) => set('startDate', e.target.value)} />
+          <DateInputFR className="ub-form__input" value={form.startDate || ''} onChange={(v) => set('startDate', v)} />
         </div>
         <div className="ub-form__field">
           <label className="ub-form__label">Fin</label>
-          <input type="date" className="ub-form__input" value={form.endDate || ''} onChange={(e) => set('endDate', e.target.value)} />
+          <DateInputFR className="ub-form__input" value={form.endDate || ''} onChange={(v) => set('endDate', v)} />
         </div>
       </div>
 

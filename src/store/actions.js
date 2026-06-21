@@ -21,6 +21,7 @@ export const ActionTypes = {
   REMOVE_WISHLIST_ITEM: 'REMOVE_WISHLIST_ITEM',
   UPDATE_WISHLIST_ITEM: 'UPDATE_WISHLIST_ITEM',
   UPDATE_PRIMO_TRACKER: 'UPDATE_PRIMO_TRACKER',
+  UPDATE_PITY_BASELINE: 'UPDATE_PITY_BASELINE',
 };
 
 export const addWish = (banner, wish) => ({
@@ -71,6 +72,11 @@ export const importSyncedWishes = (wishGroups) => ({
 export const updateSyncConfig = (syncConfig) => ({
   type: ActionTypes.UPDATE_SYNC_CONFIG,
   payload: { syncConfig },
+});
+
+export const updatePityBaseline = (banner, baseline) => ({
+  type: ActionTypes.UPDATE_PITY_BASELINE,
+  payload: { banner, baseline },
 });
 
 export const setVersion = (version) => ({

@@ -13,8 +13,8 @@ export function computeLuckMetrics(banners) {
   let losses5050 = 0;
 
   for (const [key, banner] of Object.entries(banners)) {
-    let isGuaranteed = false;
-    let pity5 = 0;
+    let isGuaranteed = banner.pityBaseline?.isGuaranteed ?? false;
+    let pity5 = banner.pityBaseline?.pity5 ?? 0;
 
     for (const wish of banner.history) {
       pity5 += 1;
@@ -42,24 +42,22 @@ export function computeLuckMetrics(banners) {
 }
 
 /**
- * Score de luck 0-100 :
- *  - 50% basé sur (avg théorique / avg réelle) — plus tu tires bas, mieux c'est
- *  - 50% basé sur le taux de wins 50/50
+ * Deux scores de luck 0-100, indépendants :
+ *  - pityScore : (avg théorique / avg réelle) — plus tu tires bas, mieux c'est
+ *  - winScore  : taux de wins 50/50 (null si aucun 50/50 enregistré)
  */
-export function calculateLuckScore(banners) {
+export function calculateLuckScores(banners) {
   const { fiveStarPities, wins5050, losses5050 } = computeLuckMetrics(banners);
 
-  if (fiveStarPities.length === 0) return null;
+  if (fiveStarPities.length === 0) return { pityScore: null, winScore: null };
 
   const avgPity = fiveStarPities.reduce((a, b) => a + b, 0) / fiveStarPities.length;
-  // Inverse : avg basse = bonne luck. Cap à 100% du score pity.
-  const pityScore = Math.max(0, Math.min(50, (THEORETICAL_AVG_PITY / avgPity) * 50));
+  const pityScore = Math.round(Math.max(0, Math.min(100, (THEORETICAL_AVG_PITY / avgPity) * 100)));
 
   const total5050 = wins5050 + losses5050;
-  const winRate = total5050 > 0 ? wins5050 / total5050 : 0.5;
-  const winScore = winRate * 50;
+  const winScore = total5050 > 0 ? Math.round((wins5050 / total5050) * 100) : null;
 
-  return Math.round(pityScore + winScore);
+  return { pityScore, winScore };
 }
 
 /**
@@ -72,7 +70,7 @@ export function compute5050Streak(banners) {
   for (const key of ['character', 'chronicled']) {
     const banner = banners[key];
     if (!banner) continue;
-    let isGuaranteed = false;
+    let isGuaranteed = banner.pityBaseline?.isGuaranteed ?? false;
 
     for (const wish of banner.history) {
       if (wish.rank === 5) {
@@ -109,11 +107,11 @@ export function compute5050Streak(banners) {
  * Stats par bannière pour le panneau Stats.
  */
 export function bannerStats(banner, bannerKey) {
-  let pity5 = 0;
+  let pity5 = banner.pityBaseline?.pity5 ?? 0;
   const fiveStarPities = [];
   let wins = 0;
   let losses = 0;
-  let isGuaranteed = false;
+  let isGuaranteed = banner.pityBaseline?.isGuaranteed ?? false;
 
   for (const wish of banner.history) {
     pity5 += 1;

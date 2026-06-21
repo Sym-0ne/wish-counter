@@ -1,10 +1,61 @@
-import { Shield, Flame, TrendingUp, TrendingDown, Sparkles, Target, AlertTriangle, Zap } from 'lucide-react';
+import { useState } from 'react';
+import { Shield, Flame, TrendingUp, TrendingDown, Sparkles, Target, AlertTriangle, Zap, Settings2, Check, X } from 'lucide-react';
 import { BANNER_CONFIG, HARD_PITY_4 } from '../utils/banners';
 
 const CRITICAL_PITY5_THRESHOLD = 80; // Pity critique commune à toutes bannières
 const PITY4_WARN_THRESHOLD = 8;      // 4★ bientôt garanti
 
-export function PityCard({ banner, bannerKey, luckScore, streak }) {
+function PityBaselineForm({ cfg, baseline, onSave, onCancel }) {
+  const [pity5, setPity5] = useState(baseline?.pity5 ?? 0);
+  const [isGuaranteed, setIsGuaranteed] = useState(baseline?.isGuaranteed ?? false);
+  const [fatePoints, setFatePoints] = useState(baseline?.fatePoints ?? 0);
+
+  return (
+    <div className="pity-baseline-form">
+      <p className="pity-baseline-form__hint">
+        À utiliser si ton historique synchronisé est incomplet (vœux manquants avant le
+        début du log) : indique la pity réelle juste avant le premier vœu enregistré,
+        pour ne pas fausser les scores de luck.
+      </p>
+      <div className="pity-baseline-form__row">
+        <label>Pity 5★ de départ</label>
+        <input
+          type="number"
+          min="0"
+          max={cfg.hardPity5 - 1}
+          value={pity5}
+          onChange={(e) => setPity5(Math.max(0, parseInt(e.target.value, 10) || 0))}
+        />
+      </div>
+      {cfg.has5050 && (
+        <label className="pity-baseline-form__checkbox">
+          <input type="checkbox" checked={isGuaranteed} onChange={(e) => setIsGuaranteed(e.target.checked)} />
+          50/50 déjà garanti (perdu juste avant le début du log)
+        </label>
+      )}
+      {cfg.hasFatePoints && (
+        <div className="pity-baseline-form__row">
+          <label>Fate Points de départ</label>
+          <select value={fatePoints} onChange={(e) => setFatePoints(Number(e.target.value))}>
+            <option value={0}>0</option>
+            <option value={1}>1</option>
+            <option value={2}>2</option>
+          </select>
+        </div>
+      )}
+      <div className="pity-baseline-form__actions">
+        <button className="btn btn--primary btn--sm" onClick={() => onSave({ pity5, isGuaranteed, fatePoints })}>
+          <Check size={13} /> Enregistrer
+        </button>
+        <button className="btn btn--ghost btn--sm" onClick={onCancel}>
+          <X size={13} /> Annuler
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function PityCard({ banner, bannerKey, luckScore, streak, onUpdateBaseline }) {
   const cfg = BANNER_CONFIG[bannerKey];
   const pity5 = banner.pity5;
   const pity4 = banner.pity4;
@@ -13,13 +64,31 @@ export function PityCard({ banner, bannerKey, luckScore, streak }) {
   const four_imminent = pity4 >= PITY4_WARN_THRESHOLD;
   const fillPct5 = Math.min(100, (pity5 / cfg.hardPity5) * 100);
   const fillPct4 = Math.min(100, (pity4 / HARD_PITY_4) * 100);
+  const [editingBaseline, setEditingBaseline] = useState(false);
 
   return (
     <div className="card">
-      <div className="card__title">
+      <div className="card__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <Shield size={16} />
         Pity actuelle
+        <button
+          className="btn btn--ghost btn--icon"
+          style={{ marginLeft: 'auto' }}
+          title="Corriger la pity de référence (historique synchronisé incomplet)"
+          onClick={() => setEditingBaseline((v) => !v)}
+        >
+          <Settings2 size={13} />
+        </button>
       </div>
+
+      {editingBaseline && (
+        <PityBaselineForm
+          cfg={cfg}
+          baseline={banner.pityBaseline}
+          onSave={(baseline) => { onUpdateBaseline?.(baseline); setEditingBaseline(false); }}
+          onCancel={() => setEditingBaseline(false)}
+        />
+      )}
 
       <div className="pity-card">
         {/* Barre 5★ */}
@@ -102,14 +171,23 @@ export function PityCard({ banner, bannerKey, luckScore, streak }) {
           )}
         </div>
 
-        {/* Luck score */}
-        {luckScore !== null && <LuckScore score={luckScore} />}
+        {/* Luck scores — pity moyenne et 50/50, indépendants */}
+        {(luckScore?.pityScore != null || luckScore?.winScore != null) && (
+          <div className="luck-score-group">
+            {luckScore.pityScore != null && (
+              <LuckScore score={luckScore.pityScore} title="Pity" sub="basé sur la pity moyenne" />
+            )}
+            {luckScore.winScore != null && (
+              <LuckScore score={luckScore.winScore} title="50/50" sub="basé sur le taux de wins" />
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function LuckScore({ score }) {
+function LuckScore({ score, title, sub }) {
   // Couleur selon le score : rouge < 40, orange 40-60, vert > 60
   let color = 'var(--soft-pity)';
   let label = 'Luck moyenne';
@@ -148,8 +226,8 @@ function LuckScore({ score }) {
         </div>
       </div>
       <div className="luck-score__label">
-        <strong>Score de luck : {score}/100</strong>
-        <span>{label} (basé sur pity moyenne et 50/50 wins)</span>
+        <strong>{title} : {score}/100</strong>
+        <span>{label} ({sub})</span>
       </div>
     </div>
   );

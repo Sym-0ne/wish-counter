@@ -72,12 +72,17 @@ export function pityBarColor(pity, bannerKey) {
  *  - pity5 ne reset QUE sur un 5★
  *
  * Cette fonction est utilisée à chaque mutation et lors d'un undo.
+ *
+ * `baseline` permet de démarrer le calcul à un point différent de zéro — utile quand
+ * l'historique synchronisé est incomplet (vœux manquants avant le début du log) :
+ * on indique la pity réelle au moment du premier vœu enregistré, sans quoi le premier
+ * 5★ de l'historique afficherait une pity artificiellement basse.
  */
-export function processHistory(history, bannerKey) {
+export function processHistory(history, bannerKey, baseline = {}) {
   let pity4 = 0;
-  let pity5 = 0;
-  let isGuaranteed = false;
-  let fatePoints = 0;
+  let pity5 = baseline.pity5 ?? 0;
+  let isGuaranteed = baseline.isGuaranteed ?? false;
+  let fatePoints = baseline.fatePoints ?? 0;
   const cfg = BANNER_CONFIG[bannerKey];
   const tagged = [];
 
@@ -126,8 +131,8 @@ export function processHistory(history, bannerKey) {
 /**
  * Helper rapide pour ne récupérer QUE les compteurs (sans retagger l'historique).
  */
-export function recomputeBannerCounters(history, bannerKey) {
-  const { pity4, pity5, isGuaranteed, fatePoints } = processHistory(history, bannerKey);
+export function recomputeBannerCounters(history, bannerKey, baseline) {
+  const { pity4, pity5, isGuaranteed, fatePoints } = processHistory(history, bannerKey, baseline);
   return { pity4, pity5, isGuaranteed, fatePoints };
 }
 
