@@ -1,10 +1,11 @@
 // Score de luck global et streaks de 50/50.
 
-const THEORETICAL_AVG_PITY = 65; // moyenne théorique pour 5★ tous bannières confondues
+import { fiveStarRate } from './pityRules';
 
 /**
  * Walk chaque bannière indépendamment pour collecter :
- *  - les pity réelles d'obtention de 5★
+ *  - les pity réelles d'obtention de 5★ (avec la bannière d'origine, nécessaire pour
+ *    calculer le taux exact — hard/soft pity diffèrent entre perso et arme)
  *  - les wins/losses 50/50 (uniquement char/chronicled, hors garanties forcées)
  */
 export function computeLuckMetrics(banners) {
@@ -19,7 +20,7 @@ export function computeLuckMetrics(banners) {
     for (const wish of banner.history) {
       pity5 += 1;
       if (wish.rank === 5) {
-        fiveStarPities.push(pity5);
+        fiveStarPities.push({ pity: pity5, bannerKey: key });
         pity5 = 0;
 
         // Le 50/50 ne compte que sur character/chronicled, et pas quand
@@ -42,8 +43,24 @@ export function computeLuckMetrics(banners) {
 }
 
 /**
+ * Probabilité qu'une tentative aléatoire ait besoin de PLUS de `pity` tirages que toi
+ * pour obtenir un 5★ — c'est-à-dire le percentile de chance de ce tirage précis.
+ * Calculée comme la probabilité de survie (aucun 5★) sur les `pity` premiers tirages,
+ * en utilisant le vrai taux soft/hard pity de la bannière concernée.
+ * 1 (100%) = tu as eu un coup de chance extrême, 0 (0%) = pity dur (le pire cas possible).
+ */
+function luckPercentile(pity, bannerKey) {
+  let survival = 1;
+  for (let i = 0; i < pity; i++) {
+    survival *= 1 - fiveStarRate(i, bannerKey);
+  }
+  return survival;
+}
+
+/**
  * Deux scores de luck 0-100, indépendants :
- *  - pityScore : (avg théorique / avg réelle) — plus tu tires bas, mieux c'est
+ *  - pityScore : percentile moyen de chance sur tous les 5★ obtenus (basé sur le
+ *    vrai modèle de probabilité soft/hard pity, pas une simple moyenne arithmétique)
  *  - winScore  : taux de wins 50/50 (null si aucun 50/50 enregistré)
  */
 export function calculateLuckScores(banners) {
@@ -51,8 +68,9 @@ export function calculateLuckScores(banners) {
 
   if (fiveStarPities.length === 0) return { pityScore: null, winScore: null };
 
-  const avgPity = fiveStarPities.reduce((a, b) => a + b, 0) / fiveStarPities.length;
-  const pityScore = Math.round(Math.max(0, Math.min(100, (THEORETICAL_AVG_PITY / avgPity) * 100)));
+  const percentiles = fiveStarPities.map(({ pity, bannerKey }) => luckPercentile(pity, bannerKey));
+  const avgPercentile = percentiles.reduce((a, b) => a + b, 0) / percentiles.length;
+  const pityScore = Math.round(avgPercentile * 100);
 
   const total5050 = wins5050 + losses5050;
   const winScore = total5050 > 0 ? Math.round((wins5050 / total5050) * 100) : null;
