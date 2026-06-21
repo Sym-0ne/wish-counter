@@ -106,6 +106,25 @@ body::before {
 
 #root { position: relative; z-index: 1; }
 
+/* ========== DYNAMIC BACKGROUND (art de la bannière en cours) ========== */
+.dynamic-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-size: cover;
+  background-position: center 20%;
+  opacity: 0.32;
+  filter: saturate(0.85) brightness(0.8);
+}
+.dynamic-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 1200px 800px at 50% 0%, transparent 0%, var(--bg) 85%),
+    linear-gradient(180deg, transparent 0%, var(--bg) 92%);
+}
+
 button { font-family: inherit; color: inherit; cursor: pointer; }
 input, select, textarea { font-family: inherit; }
 

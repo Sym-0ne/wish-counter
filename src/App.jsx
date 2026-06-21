@@ -7,6 +7,7 @@ import { fetchBannerInfoFromAuth } from './utils/gachaInfo';
 import { isBannerStale, getCurrentBanners } from './utils/bannerFetch';
 import { syncAllBanners } from './utils/wishSync';
 
+import { DynamicBackground } from './components/DynamicBackground';
 import { Header } from './components/Header';
 import { BannerInfo } from './components/BannerInfo';
 import { PityCard } from './components/PityCard';
@@ -170,6 +171,7 @@ export default function App({ profileId = 'default', profileProps = {} }) {
 
   return (
     <div className="app">
+      <DynamicBackground />
       <Header
         activeBanner={activeKey}
         view={view}
