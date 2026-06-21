@@ -6,42 +6,12 @@
     "featured": "Sandrone",
     "featuredSlug": null,
     "featuredPortrait": null,
-    "featured2": "Citlali",
-    "featured2Slug": null,
-    "featured2Portrait": null,
-    "startDate": "2026-07-01",
-    "endDate": "2026-07-21",
-    "confidence": "officiel",
-    "source": "Livestream"
-  },
-  {
-    "bannerKey": "character",
-    "version": "6.7",
-    "phase": 1,
-    "featured": "Sandrone",
-    "featuredSlug": null,
-    "featuredPortrait": null,
-    "featured2": "Citlali",
+    "featured2": "Columbina",
     "featured2Slug": null,
     "featured2Portrait": null,
     "startDate": null,
     "endDate": null,
     "confidence": "officiel",
-    "source": "LiveStream"
-  },
-  {
-    "bannerKey": "character",
-    "version": "6.7",
-    "phase": 1,
-    "featured": "Sandrone",
-    "featuredSlug": null,
-    "featuredPortrait": null,
-    "featured2": "Citlali",
-    "featured2Slug": null,
-    "featured2Portrait": null,
-    "startDate": "2026-07-01",
-    "endDate": "2026-07-21",
-    "confidence": "officiel",
-    "source": "Livestream"
+    "source": "Simon"
   }
 ]
