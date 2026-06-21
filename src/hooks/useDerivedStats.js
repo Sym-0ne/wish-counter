@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { calculateLuckScores, compute5050Streak, bannerStats } from '../utils/luckScore';
+import { calculateLuckScores, compute5050Streaks, bannerStats } from '../utils/luckScore';
 import { BANNER_KEYS } from '../utils/banners';
 
 /**
@@ -60,7 +60,7 @@ export function useLuckScore(banners) {
 }
 
 export function useStreak(banners) {
-  return useMemo(() => compute5050Streak(banners), [banners]);
+  return useMemo(() => compute5050Streaks(banners), [banners]);
 }
 
 export function useBannerStats(banner, bannerKey) {

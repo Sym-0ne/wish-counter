@@ -1,46 +1,6 @@
-// Score de luck global et streaks de 50/50.
+// Score de luck par bannière et streaks de 50/50.
 
 import { fiveStarRate } from './pityRules';
-
-/**
- * Walk chaque bannière indépendamment pour collecter :
- *  - les pity réelles d'obtention de 5★ (avec la bannière d'origine, nécessaire pour
- *    calculer le taux exact — hard/soft pity diffèrent entre perso et arme)
- *  - les wins/losses 50/50 (uniquement char/chronicled, hors garanties forcées)
- */
-export function computeLuckMetrics(banners) {
-  const fiveStarPities = [];
-  let wins5050 = 0;
-  let losses5050 = 0;
-
-  for (const [key, banner] of Object.entries(banners)) {
-    let isGuaranteed = banner.pityBaseline?.isGuaranteed ?? false;
-    let pity5 = banner.pityBaseline?.pity5 ?? 0;
-
-    for (const wish of banner.history) {
-      pity5 += 1;
-      if (wish.rank === 5) {
-        fiveStarPities.push({ pity: pity5, bannerKey: key });
-        pity5 = 0;
-
-        // Le 50/50 ne compte que sur character/chronicled, et pas quand
-        // c'est une garantie forcée (issue d'une loss précédente).
-        if (key === 'character' || key === 'chronicled') {
-          if (isGuaranteed) {
-            isGuaranteed = false; // garantie consommée, ne compte pas
-          } else if (wish.featured) {
-            wins5050 += 1;
-          } else {
-            losses5050 += 1;
-            isGuaranteed = true;
-          }
-        }
-      }
-    }
-  }
-
-  return { fiveStarPities, wins5050, losses5050 };
-}
 
 /**
  * Probabilité qu'une tentative aléatoire ait besoin de PLUS de `pity` tirages que toi
@@ -58,39 +18,72 @@ function luckPercentile(pity, bannerKey) {
 }
 
 /**
- * Deux scores de luck 0-100, indépendants :
- *  - pityScore : percentile moyen de chance sur tous les 5★ obtenus (basé sur le
- *    vrai modèle de probabilité soft/hard pity, pas une simple moyenne arithmétique)
- *  - winScore  : taux de wins 50/50 (null si aucun 50/50 enregistré)
+ * Deux scores de luck 0-100 PAR BANNIÈRE (jamais mélangés — perso/arme/standard/
+ * chroniques ont chacun leur propre pity et leur propre pool 50/50) :
+ *  - pityScore : percentile moyen de chance sur les 5★ de CETTE bannière, basé sur
+ *    son propre modèle soft/hard pity (différent entre perso et arme par exemple)
+ *  - winScore  : taux de wins 50/50 de cette bannière (null si non applicable ou
+ *    aucun 50/50 enregistré — uniquement character/chronicled)
+ *
+ * Retourne { character: {pityScore, winScore}, weapon: {...}, standard: {...}, chronicled: {...} }
  */
 export function calculateLuckScores(banners) {
-  const { fiveStarPities, wins5050, losses5050 } = computeLuckMetrics(banners);
+  const result = {};
 
-  if (fiveStarPities.length === 0) return { pityScore: null, winScore: null };
+  for (const [key, banner] of Object.entries(banners)) {
+    let isGuaranteed = banner.pityBaseline?.isGuaranteed ?? false;
+    let pity5 = banner.pityBaseline?.pity5 ?? 0;
+    const percentiles = [];
+    let wins = 0;
+    let losses = 0;
 
-  const percentiles = fiveStarPities.map(({ pity, bannerKey }) => luckPercentile(pity, bannerKey));
-  const avgPercentile = percentiles.reduce((a, b) => a + b, 0) / percentiles.length;
-  const pityScore = Math.round(avgPercentile * 100);
+    for (const wish of banner.history) {
+      pity5 += 1;
+      if (wish.rank === 5) {
+        percentiles.push(luckPercentile(pity5, key));
+        pity5 = 0;
 
-  const total5050 = wins5050 + losses5050;
-  const winScore = total5050 > 0 ? Math.round((wins5050 / total5050) * 100) : null;
+        // Le 50/50 ne compte que sur character/chronicled, et pas quand
+        // c'est une garantie forcée (issue d'une loss précédente).
+        if (key === 'character' || key === 'chronicled') {
+          if (isGuaranteed) {
+            isGuaranteed = false; // garantie consommée, ne compte pas
+          } else if (wish.featured) {
+            wins += 1;
+          } else {
+            losses += 1;
+            isGuaranteed = true;
+          }
+        }
+      }
+    }
 
-  return { pityScore, winScore };
+    const pityScore = percentiles.length > 0
+      ? Math.round((percentiles.reduce((a, b) => a + b, 0) / percentiles.length) * 100)
+      : null;
+    const total = wins + losses;
+    const winScore = total > 0 ? Math.round((wins / total) * 100) : null;
+
+    result[key] = { pityScore, winScore };
+  }
+
+  return result;
 }
 
 /**
- * Streak 50/50 actif : combien de wins/losses consécutifs au plus récent ?
- * Concatène char + chronicled triés par timestamp.
+ * Streak 50/50 actif PAR BANNIÈRE : combien de wins/losses consécutifs au plus récent.
+ * Character et chronicled ont des pools 50/50 mécaniquement séparés en jeu — jamais
+ * mélangés ici. Retourne { character: {type, count}, chronicled: {type, count} }.
  */
-export function compute5050Streak(banners) {
-  const events = [];
+export function compute5050Streaks(banners) {
+  const result = {};
 
   for (const key of ['character', 'chronicled']) {
     const banner = banners[key];
-    if (!banner) continue;
-    let isGuaranteed = banner.pityBaseline?.isGuaranteed ?? false;
+    let isGuaranteed = banner?.pityBaseline?.isGuaranteed ?? false;
+    const wins = [];
 
-    for (const wish of banner.history) {
+    for (const wish of banner?.history ?? []) {
       if (wish.rank === 5) {
         if (isGuaranteed) {
           // garantie consommée, n'apparaît pas dans la séquence 50/50
@@ -98,27 +91,29 @@ export function compute5050Streak(banners) {
           continue;
         }
         if (wish.featured) {
-          events.push({ ts: wish.timestamp, won: true });
+          wins.push(true);
         } else {
-          events.push({ ts: wish.timestamp, won: false });
+          wins.push(false);
           isGuaranteed = true;
         }
       }
     }
+
+    if (wins.length === 0) {
+      result[key] = { type: 'none', count: 0 };
+      continue;
+    }
+
+    const last = wins[wins.length - 1];
+    let streak = 1;
+    for (let i = wins.length - 2; i >= 0; i--) {
+      if (wins[i] === last) streak += 1;
+      else break;
+    }
+    result[key] = { type: last ? 'wins' : 'losses', count: streak };
   }
 
-  events.sort((a, b) => a.ts - b.ts);
-
-  if (events.length === 0) return { type: 'none', count: 0 };
-
-  const last = events[events.length - 1];
-  let streak = 1;
-  for (let i = events.length - 2; i >= 0; i--) {
-    if (events[i].won === last.won) streak += 1;
-    else break;
-  }
-
-  return { type: last.won ? 'wins' : 'losses', count: streak };
+  return result;
 }
 
 /**

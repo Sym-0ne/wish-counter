@@ -202,8 +202,8 @@ export default function App({ profileId = 'default', profileProps = {} }) {
             <PityCard
               banner={activeBanner}
               bannerKey={activeKey}
-              luckScore={luckScore}
-              streak={streak}
+              luckScore={luckScore[activeKey]}
+              streak={streak[activeKey]}
               onUpdateBaseline={(baseline) => dispatch(A.updatePityBaseline(activeKey, baseline))}
             />
             <AddWishControls
