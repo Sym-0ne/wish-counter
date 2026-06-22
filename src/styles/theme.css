@@ -113,16 +113,16 @@ body::before {
   z-index: -1;
   background-size: cover;
   background-position: center 20%;
-  opacity: 0.32;
-  filter: saturate(0.85) brightness(0.8);
+  opacity: 0.9;
+  filter: saturate(1.05) brightness(0.95);
 }
 .dynamic-bg::after {
   content: '';
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 1200px 800px at 50% 0%, transparent 0%, var(--bg) 85%),
-    linear-gradient(180deg, transparent 0%, var(--bg) 92%);
+    radial-gradient(ellipse 1400px 900px at 50% 0%, transparent 45%, var(--bg) 100%),
+    linear-gradient(180deg, transparent 55%, var(--bg) 100%);
 }
 
 button { font-family: inherit; color: inherit; cursor: pointer; }
