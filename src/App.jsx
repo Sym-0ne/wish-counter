@@ -8,6 +8,7 @@ import { isBannerStale, getCurrentBanners } from './utils/bannerFetch';
 import { syncAllBanners } from './utils/wishSync';
 
 import { DynamicBackground } from './components/DynamicBackground';
+import { OnboardingTour, TUTORIAL_SEEN_KEY } from './components/OnboardingTour';
 import { Header } from './components/Header';
 import { BannerInfo } from './components/BannerInfo';
 import { PityCard } from './components/PityCard';
@@ -37,6 +38,7 @@ export default function App({ profileId = 'default', profileProps = {} }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [syncOpen, setSyncOpen] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   // Read ?authkey= URL param set by the PowerShell helper script.
   // Extract the value once on mount, then remove it from the URL to keep it clean.
@@ -70,6 +72,16 @@ export default function App({ profileId = 'default', profileProps = {} }) {
   useEffect(() => {
     if (initialAuthkeyUrl) setSyncOpen(true);
   }, [initialAuthkeyUrl]);
+
+  // First-visit onboarding tour — skipped if already seen (flag lives outside
+  // STORAGE_KEY so it survives independently of "Reset tout" / export-import).
+  useEffect(() => {
+    if (initialAuthkeyUrl) return; // priorité au flow de sync auto-déclenché
+    if (localStorage.getItem(TUTORIAL_SEEN_KEY)) return;
+    const id = setTimeout(() => setShowTutorial(true), 600);
+    return () => clearTimeout(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Auto-sync current game version from banners-current.json on mount
   useEffect(() => {
@@ -329,7 +341,14 @@ export default function App({ profileId = 'default', profileProps = {} }) {
         onImport={(s, mode) => dispatch(A.importState(s, mode))}
         onResetBanner={(b) => dispatch(A.resetBanner(b))}
         onResetAll={() => dispatch(A.resetAll())}
+        onReplayTutorial={() => {
+          localStorage.removeItem(TUTORIAL_SEEN_KEY);
+          setSettingsOpen(false);
+          setTimeout(() => setShowTutorial(true), 200);
+        }}
       />
+
+      {showTutorial && <OnboardingTour onFinish={() => setShowTutorial(false)} />}
     </div>
   );
 }

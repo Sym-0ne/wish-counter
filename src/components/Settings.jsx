@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, RefreshCw, AlertTriangle } from 'lucide-react';
+import { X, RefreshCw, AlertTriangle, HelpCircle } from 'lucide-react';
 import { ExportImport } from './ExportImport';
 import { SyncConfig } from './SyncConfig';
 import { CURRENT_VERSION } from '../store/initialState';
@@ -17,6 +17,7 @@ export function Settings({
   onUpdateSyncConfig,
   onResetBanner,
   onResetAll,
+  onReplayTutorial,
 }) {
   const [confirmReset, setConfirmReset] = useState(null); // null | bannerKey | 'all'
 
@@ -72,6 +73,16 @@ export function Settings({
           />
 
           <ExportImport state={state} onImport={onImport} />
+
+          <section className="card">
+            <h3 className="card__title"><HelpCircle size={18} /> Aide</h3>
+            <p className="card__subtitle">
+              Revoir la présentation des catégories et de la synchronisation automatique.
+            </p>
+            <button className="btn btn--ghost" onClick={onReplayTutorial}>
+              <HelpCircle size={14} /> Revoir le tutoriel
+            </button>
+          </section>
 
           <section className="card">
             <h3 className="card__title" style={{ color: 'var(--danger)' }}>

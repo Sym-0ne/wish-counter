@@ -56,6 +56,7 @@ function SyncButton({ sync, syncing, onOpenSync }) {
       className={`btn btn--ghost btn--small sync-header-btn ${!hasConfig ? 'sync-header-btn--unconfigured' : ''}`}
       onClick={onOpenSync}
       title={title}
+      data-tour="sync-button"
     >
       <RefreshCw size={13} className={syncing ? 'spin' : ''} />
       <span>{label}</span>
@@ -79,6 +80,7 @@ function MobileBottomNav({ view, onViewChange }) {
           key={key}
           className={`mobile-nav__item ${view === key ? 'active' : ''}`}
           onClick={() => onViewChange(key)}
+          data-tour={`nav-${key}`}
         >
           <Icon size={18} />
           <span>{shortLabel}</span>
@@ -116,7 +118,12 @@ export function Header({ activeBanner, view, onBannerChange, onViewChange, onOpe
 
           <div className="header__view-toggle">
             {VIEW_NAV.map(({ key, label, Icon }) => (
-              <button key={key} className={view === key ? 'active' : ''} onClick={() => onViewChange(key)}>
+              <button
+                key={key}
+                className={view === key ? 'active' : ''}
+                onClick={() => onViewChange(key)}
+                data-tour={`nav-${key}`}
+              >
                 <Icon size={14} style={{ marginRight: 4 }} />
                 {label}
               </button>
@@ -136,7 +143,12 @@ export function Header({ activeBanner, view, onBannerChange, onViewChange, onOpe
               onDelete={profileProps.onDelete}
             />
           )}
-          <button className="btn btn--ghost btn--small" onClick={onOpenSettings} title="Réglages">
+          <button
+            className="btn btn--ghost btn--small"
+            onClick={onOpenSettings}
+            title="Réglages"
+            data-tour="settings-button"
+          >
             <SettingsIcon size={16} />
           </button>
         </div>
