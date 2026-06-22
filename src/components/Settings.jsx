@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, RefreshCw, AlertTriangle, HelpCircle } from 'lucide-react';
 import { ExportImport } from './ExportImport';
+import { CloudBackup } from './CloudBackup';
 import { SyncConfig } from './SyncConfig';
 import { CURRENT_VERSION } from '../store/initialState';
 
@@ -73,6 +74,8 @@ export function Settings({
           />
 
           <ExportImport state={state} onImport={onImport} />
+
+          <CloudBackup state={state} onImport={onImport} />
 
           <section className="card">
             <h3 className="card__title"><HelpCircle size={18} /> Aide</h3>

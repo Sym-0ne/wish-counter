@@ -37,6 +37,7 @@ jobs:
         run: npm run build
         env:
           VITE_WORKER_URL: ${{ secrets.WORKER_URL }}
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
