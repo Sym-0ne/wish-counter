@@ -1,38 +1,9 @@
 {
-  "fetchedAt": "2026-06-30T06:59:58.580Z",
+  "fetchedAt": "2026-07-01T07:17:04.027Z",
   "source": "paimon.moe",
   "banners": {
-    "character": {
-      "featured": "Lohen",
-      "featuredSlug": "lohen",
-      "featuredPortrait": "https://enka.network/ui/UI_AvatarIcon_Lohen.png",
-      "featured2": "Mavuika",
-      "featured2Slug": "mavuika",
-      "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Mavuika.png",
-      "bannerName": "Frostedge Nocturne",
-      "endDate": "2026-06-30",
-      "startDate": "2026-06-09",
-      "version": "6.6"
-    },
-    "weapon": {
-      "featured": "Disaster And Remorse",
-      "featuredSlug": "disaster_and_remorse",
-      "featuredPortrait": "https://enka.network/ui/UI_EquipIcon_Pole_Carbine_Awaken.png",
-      "featured2": "A Thousand Blazing Suns",
-      "featured2Slug": "a_thousand_blazing_suns",
-      "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Claymore_RadianceSword_Awaken.png",
-      "featuredWeapons": [
-        "Disaster And Remorse",
-        "A Thousand Blazing Suns"
-      ],
-      "featuredWeaponSlugs": [
-        "disaster_and_remorse",
-        "a_thousand_blazing_suns"
-      ],
-      "endDate": "2026-06-30",
-      "startDate": "2026-06-09",
-      "version": "6.6"
-    },
+    "character": null,
+    "weapon": null,
     "chronicled": null,
     "standard": null
   },
