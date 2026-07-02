@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-01T07:17:04.031Z",
+  "fetchedAt": "2026-07-02T06:46:44.557Z",
   "character": [
     {
       "startMs": 1601222400000,
@@ -1313,6 +1313,19 @@
       "version": "6.6",
       "bannerName": "Frostedge Nocturne",
       "phase": 2
+    },
+    {
+      "startMs": 1782856800000,
+      "endMs": 1784627940000,
+      "featured": "Sandrone",
+      "featuredSlug": "sandrone",
+      "featuredPortrait": "https://enka.network/ui/UI_AvatarIcon_Sandrone.png",
+      "featured2": "Citlali",
+      "featured2Slug": "citlali",
+      "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Citlali.png",
+      "version": "6.7",
+      "bannerName": "To the Looking-Glass the Mademoiselle Said",
+      "phase": 1
     }
   ],
   "weapon": [
@@ -2515,6 +2528,18 @@
       "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Claymore_RadianceSword_Awaken.png",
       "version": "6.6",
       "bannerName": "Epitome Invocation"
+    },
+    {
+      "startMs": 1782856800000,
+      "endMs": 1784627940000,
+      "featured": "A Teaspoon Of Transcendence",
+      "featuredSlug": "a_teaspoon_of_transcendence",
+      "featuredPortrait": "https://enka.network/ui/UI_EquipIcon_Claymore_CrystallineSword_Awaken.png",
+      "featured2": "Starcallers Watch",
+      "featured2Slug": "starcallers_watch",
+      "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Catalyst_Figurines_Awaken.png",
+      "version": "6.7",
+      "bannerName": "Epitome Invocation"
     }
   ],
   "chronicled": [
@@ -2594,6 +2619,19 @@
       "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Clorinde.png",
       "version": "6.5",
       "bannerName": "Dewlit Tranquility",
+      "phase": 1
+    },
+    {
+      "startMs": 1782856800000,
+      "endMs": 1784627940000,
+      "featured": "Yumemizuki Mizuki",
+      "featuredSlug": "yumemizuki_mizuki",
+      "featuredPortrait": "https://enka.network/ui/UI_AvatarIcon_YumemizukiMizuki.png",
+      "featured2": "Wriothesley",
+      "featured2Slug": "wriothesley",
+      "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Wriothesley.png",
+      "version": "6.7",
+      "bannerName": "Heavenlit Prophecy",
       "phase": 1
     }
   ]

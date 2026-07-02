@@ -1,10 +1,47 @@
 {
-  "fetchedAt": "2026-07-01T07:17:04.027Z",
+  "fetchedAt": "2026-07-02T06:46:44.553Z",
   "source": "paimon.moe",
   "banners": {
-    "character": null,
-    "weapon": null,
-    "chronicled": null,
+    "character": {
+      "featured": "Sandrone",
+      "featuredSlug": "sandrone",
+      "featuredPortrait": null,
+      "featured2": "Citlali",
+      "featured2Slug": "citlali",
+      "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Citlali.png",
+      "bannerName": "To the Looking-Glass the Mademoiselle Said",
+      "endDate": "2026-07-21",
+      "startDate": "2026-07-01",
+      "version": "6.7"
+    },
+    "weapon": {
+      "featured": "A Teaspoon Of Transcendence",
+      "featuredSlug": "a_teaspoon_of_transcendence",
+      "featuredPortrait": "https://enka.network/ui/UI_EquipIcon_Claymore_CrystallineSword_Awaken.png",
+      "featured2": "Starcallers Watch",
+      "featured2Slug": "starcallers_watch",
+      "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Catalyst_Figurines_Awaken.png",
+      "featuredWeapons": [
+        "A Teaspoon Of Transcendence",
+        "Starcallers Watch"
+      ],
+      "featuredWeaponSlugs": [
+        "a_teaspoon_of_transcendence",
+        "starcallers_watch"
+      ],
+      "endDate": "2026-07-21",
+      "startDate": "2026-07-01",
+      "version": "6.7"
+    },
+    "chronicled": {
+      "featured": "Yumemizuki Mizuki",
+      "featuredSlug": "yumemizuki_mizuki",
+      "featuredPortrait": null,
+      "bannerName": "Heavenlit Prophecy",
+      "endDate": "2026-07-21",
+      "startDate": "2026-07-01",
+      "version": "6.7"
+    },
     "standard": null
   },
   "upcoming": []
