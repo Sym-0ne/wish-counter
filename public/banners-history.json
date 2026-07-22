@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-21T05:56:23.559Z",
+  "fetchedAt": "2026-07-22T05:55:17.300Z",
   "character": [
     {
       "startMs": 1601222400000,
@@ -1326,6 +1326,19 @@
       "version": "6.7",
       "bannerName": "To the Looking-Glass the Mademoiselle Said",
       "phase": 1
+    },
+    {
+      "startMs": 1784628000000,
+      "endMs": 1786431540000,
+      "featured": "Columbina",
+      "featuredSlug": "columbina",
+      "featuredPortrait": "https://enka.network/ui/UI_AvatarIcon_Columbina.png",
+      "featured2": "Raiden Shogun",
+      "featured2Slug": "raiden_shogun",
+      "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_RaidenShogun.png",
+      "version": "6.7",
+      "bannerName": "Somnias a Luna",
+      "phase": 2
     }
   ],
   "weapon": [
@@ -2538,6 +2551,18 @@
       "featured2": "Starcallers Watch",
       "featured2Slug": "starcallers_watch",
       "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Catalyst_Figurines_Awaken.png",
+      "version": "6.7",
+      "bannerName": "Epitome Invocation"
+    },
+    {
+      "startMs": 1784628000000,
+      "endMs": 1786431540000,
+      "featured": "Nocturnes Curtain Call",
+      "featuredSlug": "nocturnes_curtain_call",
+      "featuredPortrait": "https://enka.network/ui/UI_EquipIcon_Catalyst_Brisingamen_Awaken.png",
+      "featured2": "Engulfing Lightning",
+      "featured2Slug": "engulfing_lightning",
+      "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Pole_Narukami_Awaken.png",
       "version": "6.7",
       "bannerName": "Epitome Invocation"
     }
