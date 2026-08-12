@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-08-11T04:24:50.904Z",
+  "fetchedAt": "2026-08-12T04:52:53.937Z",
   "character": [
     {
       "startMs": 1601222400000,
@@ -1339,6 +1339,19 @@
       "version": "6.7",
       "bannerName": "Somnias a Luna",
       "phase": 2
+    },
+    {
+      "startMs": 1786485600000,
+      "endMs": 1788256740000,
+      "featured": "Odette",
+      "featuredSlug": "odette",
+      "featuredPortrait": "https://enka.network/ui/UI_AvatarIcon_Odette.png",
+      "featured2": "Arlecchino",
+      "featured2Slug": "arlecchino",
+      "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Arlecchino.png",
+      "version": "7.0",
+      "bannerName": "Swan's Shadow in Silken Ice",
+      "phase": 1
     }
   ],
   "weapon": [
@@ -2564,6 +2577,18 @@
       "featured2Slug": "engulfing_lightning",
       "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Pole_Narukami_Awaken.png",
       "version": "6.7",
+      "bannerName": "Epitome Invocation"
+    },
+    {
+      "startMs": 1786485600000,
+      "endMs": 1788256740000,
+      "featured": "Whitelake Frostfeather",
+      "featuredSlug": "whitelake_frostfeather",
+      "featuredPortrait": "https://enka.network/ui/UI_EquipIcon_Sword_Swanlake_Awaken.png",
+      "featured2": "Crimson Moons Semblance",
+      "featured2Slug": "crimson_moons_semblance",
+      "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Pole_BloodMoon_Awaken.png",
+      "version": "7.0",
       "bannerName": "Epitome Invocation"
     }
   ],
