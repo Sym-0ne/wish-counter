@@ -1,9 +1,38 @@
 {
-  "fetchedAt": "2026-08-12T04:52:53.933Z",
+  "fetchedAt": "2026-08-13T04:57:07.474Z",
   "source": "paimon.moe",
   "banners": {
-    "character": null,
-    "weapon": null,
+    "character": {
+      "featured": "Odette",
+      "featuredSlug": "odette",
+      "featuredPortrait": "https://enka.network/ui/UI_AvatarIcon_Odette.png",
+      "featured2": "Arlecchino",
+      "featured2Slug": "arlecchino",
+      "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Arlecchino.png",
+      "bannerName": "Swan's Shadow in Silken Ice",
+      "endDate": "2026-09-01",
+      "startDate": "2026-08-12",
+      "version": "7.0"
+    },
+    "weapon": {
+      "featured": "Whitelake Frostfeather",
+      "featuredSlug": "whitelake_frostfeather",
+      "featuredPortrait": null,
+      "featured2": "Crimson Moons Semblance",
+      "featured2Slug": "crimson_moons_semblance",
+      "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Pole_BloodMoon_Awaken.png",
+      "featuredWeapons": [
+        "Whitelake Frostfeather",
+        "Crimson Moons Semblance"
+      ],
+      "featuredWeaponSlugs": [
+        "whitelake_frostfeather",
+        "crimson_moons_semblance"
+      ],
+      "endDate": "2026-09-01",
+      "startDate": "2026-08-12",
+      "version": "7.0"
+    },
     "chronicled": null,
     "standard": null
   },
