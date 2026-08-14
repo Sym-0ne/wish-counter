@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-08-13T04:57:07.477Z",
+  "fetchedAt": "2026-08-14T04:53:40.031Z",
   "character": [
     {
       "startMs": 1601222400000,
@@ -2584,7 +2584,7 @@
       "endMs": 1788256740000,
       "featured": "Whitelake Frostfeather",
       "featuredSlug": "whitelake_frostfeather",
-      "featuredPortrait": null,
+      "featuredPortrait": "https://enka.network/ui/UI_EquipIcon_Sword_Swanlake_Awaken.png",
       "featured2": "Crimson Moons Semblance",
       "featured2Slug": "crimson_moons_semblance",
       "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Pole_BloodMoon_Awaken.png",

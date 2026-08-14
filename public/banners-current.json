@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-08-13T04:57:07.474Z",
+  "fetchedAt": "2026-08-14T04:53:40.028Z",
   "source": "paimon.moe",
   "banners": {
     "character": {
@@ -17,7 +17,7 @@
     "weapon": {
       "featured": "Whitelake Frostfeather",
       "featuredSlug": "whitelake_frostfeather",
-      "featuredPortrait": null,
+      "featuredPortrait": "https://enka.network/ui/UI_EquipIcon_Sword_Swanlake_Awaken.png",
       "featured2": "Crimson Moons Semblance",
       "featured2Slug": "crimson_moons_semblance",
       "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Pole_BloodMoon_Awaken.png",
