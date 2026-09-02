@@ -1,36 +1,36 @@
 {
-  "fetchedAt": "2026-09-01T08:30:51.230Z",
+  "fetchedAt": "2026-09-02T07:48:10.098Z",
   "source": "paimon.moe",
   "banners": {
     "character": {
-      "featured": "Odette",
-      "featuredSlug": "odette",
-      "featuredPortrait": "https://enka.network/ui/UI_AvatarIcon_Odette.png",
-      "featured2": "Arlecchino",
-      "featured2Slug": "arlecchino",
-      "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Arlecchino.png",
-      "bannerName": "Swan's Shadow in Silken Ice",
-      "endDate": "2026-09-01",
-      "startDate": "2026-08-12",
+      "featured": "Flins",
+      "featuredSlug": "flins",
+      "featuredPortrait": "https://enka.network/ui/UI_AvatarIcon_Flins.png",
+      "featured2": "Ineffa",
+      "featured2Slug": "ineffa",
+      "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Ineffa.png",
+      "bannerName": "The Lone Light Knocks at Night",
+      "endDate": "2026-09-22",
+      "startDate": "2026-09-01",
       "version": "7.0"
     },
     "weapon": {
-      "featured": "Whitelake Frostfeather",
-      "featuredSlug": "whitelake_frostfeather",
-      "featuredPortrait": "https://enka.network/ui/UI_EquipIcon_Sword_Swanlake_Awaken.png",
-      "featured2": "Crimson Moons Semblance",
-      "featured2Slug": "crimson_moons_semblance",
-      "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Pole_BloodMoon_Awaken.png",
+      "featured": "Bloodsoaked Ruins",
+      "featuredSlug": "bloodsoaked_ruins",
+      "featuredPortrait": "https://enka.network/ui/UI_EquipIcon_Pole_TummaLyhty_Awaken.png",
+      "featured2": "Fractured Halo",
+      "featured2Slug": "fractured_halo",
+      "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Pole_Perdix_Awaken.png",
       "featuredWeapons": [
-        "Whitelake Frostfeather",
-        "Crimson Moons Semblance"
+        "Bloodsoaked Ruins",
+        "Fractured Halo"
       ],
       "featuredWeaponSlugs": [
-        "whitelake_frostfeather",
-        "crimson_moons_semblance"
+        "bloodsoaked_ruins",
+        "fractured_halo"
       ],
-      "endDate": "2026-09-01",
-      "startDate": "2026-08-12",
+      "endDate": "2026-09-22",
+      "startDate": "2026-09-01",
       "version": "7.0"
     },
     "chronicled": null,

@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-09-01T08:30:51.233Z",
+  "fetchedAt": "2026-09-02T07:48:10.101Z",
   "character": [
     {
       "startMs": 1601222400000,
@@ -1352,6 +1352,19 @@
       "version": "7.0",
       "bannerName": "Swan's Shadow in Silken Ice",
       "phase": 1
+    },
+    {
+      "startMs": 1788256800000,
+      "endMs": 1790060340000,
+      "featured": "Flins",
+      "featuredSlug": "flins",
+      "featuredPortrait": "https://enka.network/ui/UI_AvatarIcon_Flins.png",
+      "featured2": "Ineffa",
+      "featured2Slug": "ineffa",
+      "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Ineffa.png",
+      "version": "7.0",
+      "bannerName": "The Lone Light Knocks at Night",
+      "phase": 2
     }
   ],
   "weapon": [
@@ -2588,6 +2601,18 @@
       "featured2": "Crimson Moons Semblance",
       "featured2Slug": "crimson_moons_semblance",
       "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Pole_BloodMoon_Awaken.png",
+      "version": "7.0",
+      "bannerName": "Epitome Invocation"
+    },
+    {
+      "startMs": 1788256800000,
+      "endMs": 1790060340000,
+      "featured": "Bloodsoaked Ruins",
+      "featuredSlug": "bloodsoaked_ruins",
+      "featuredPortrait": "https://enka.network/ui/UI_EquipIcon_Pole_TummaLyhty_Awaken.png",
+      "featured2": "Fractured Halo",
+      "featured2Slug": "fractured_halo",
+      "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Pole_Perdix_Awaken.png",
       "version": "7.0",
       "bannerName": "Epitome Invocation"
     }
