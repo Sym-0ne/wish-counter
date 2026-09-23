@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-09-22T08:25:03.573Z",
+  "fetchedAt": "2026-09-23T08:27:34.812Z",
   "character": [
     {
       "startMs": 1601222400000,
@@ -1365,6 +1365,19 @@
       "version": "7.0",
       "bannerName": "The Lone Light Knocks at Night",
       "phase": 2
+    },
+    {
+      "startMs": 1790114400000,
+      "endMs": 1791885599000,
+      "featured": "Vesna",
+      "featuredSlug": "vesna",
+      "featuredPortrait": "https://enka.network/ui/UI_AvatarIcon_Vesna.png",
+      "featured2": "Vodyanitsa",
+      "featured2Slug": "vodyanitsa",
+      "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Vodyanitsa.png",
+      "version": "7.1",
+      "bannerName": "When Warm Winds Cavort",
+      "phase": 1
     }
   ],
   "weapon": [
@@ -2614,6 +2627,18 @@
       "featured2Slug": "fractured_halo",
       "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Pole_Perdix_Awaken.png",
       "version": "7.0",
+      "bannerName": "Epitome Invocation"
+    },
+    {
+      "startMs": 1790114400000,
+      "endMs": 1791885599000,
+      "featured": "Beyond The Chrysalis",
+      "featuredSlug": "beyond_the_chrysalis",
+      "featuredPortrait": null,
+      "featured2": "Hymn Of The Maelstrom",
+      "featured2Slug": "hymn_of_the_maelstrom",
+      "featured2Portrait": null,
+      "version": "7.1",
       "bannerName": "Epitome Invocation"
     }
   ],
