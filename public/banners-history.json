@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-09-24T08:19:12.306Z",
+  "fetchedAt": "2026-09-25T08:41:53.638Z",
   "character": [
     {
       "startMs": 1601222400000,
@@ -2634,10 +2634,10 @@
       "endMs": 1791885599000,
       "featured": "Beyond The Chrysalis",
       "featuredSlug": "beyond_the_chrysalis",
-      "featuredPortrait": null,
+      "featuredPortrait": "https://enka.network/ui/UI_EquipIcon_Sword_Samosvist_Awaken.png",
       "featured2": "Hymn Of The Maelstrom",
       "featured2Slug": "hymn_of_the_maelstrom",
-      "featured2Portrait": null,
+      "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Catalyst_Bludnye_Awaken.png",
       "version": "7.1",
       "bannerName": "Epitome Invocation"
     }

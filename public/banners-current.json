@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-09-24T08:19:12.303Z",
+  "fetchedAt": "2026-09-25T08:41:53.636Z",
   "source": "paimon.moe",
   "banners": {
     "character": {
@@ -17,10 +17,10 @@
     "weapon": {
       "featured": "Beyond The Chrysalis",
       "featuredSlug": "beyond_the_chrysalis",
-      "featuredPortrait": null,
+      "featuredPortrait": "https://enka.network/ui/UI_EquipIcon_Sword_Samosvist_Awaken.png",
       "featured2": "Hymn Of The Maelstrom",
       "featured2Slug": "hymn_of_the_maelstrom",
-      "featured2Portrait": null,
+      "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Catalyst_Bludnye_Awaken.png",
       "featuredWeapons": [
         "Beyond The Chrysalis",
         "Hymn Of The Maelstrom"
