@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-10-12T10:33:01.960Z",
+  "fetchedAt": "2026-10-13T10:21:52.810Z",
   "character": [
     {
       "startMs": 1601222400000,
@@ -1378,6 +1378,19 @@
       "version": "7.1",
       "bannerName": "When Warm Winds Cavort",
       "phase": 1
+    },
+    {
+      "startMs": 1791885600000,
+      "endMs": 1793689199000,
+      "featured": "Skirk",
+      "featuredSlug": "skirk",
+      "featuredPortrait": "https://enka.network/ui/UI_AvatarIcon_Skirk.png",
+      "featured2": "Escoffier",
+      "featured2Slug": "escoffier",
+      "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Escoffier.png",
+      "version": "7.1",
+      "bannerName": "Void Star's Advent",
+      "phase": 2
     }
   ],
   "weapon": [
@@ -2638,6 +2651,18 @@
       "featured2": "Hymn Of The Maelstrom",
       "featured2Slug": "hymn_of_the_maelstrom",
       "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Catalyst_Bludnye_Awaken.png",
+      "version": "7.1",
+      "bannerName": "Epitome Invocation"
+    },
+    {
+      "startMs": 1791885600000,
+      "endMs": 1793689199000,
+      "featured": "Azurelight",
+      "featuredSlug": "azurelight",
+      "featuredPortrait": "https://enka.network/ui/UI_EquipIcon_Sword_OuterSword_Awaken.png",
+      "featured2": "Symphonist Of Scents",
+      "featured2Slug": "symphonist_of_scents",
+      "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Pole_Trident_Awaken.png",
       "version": "7.1",
       "bannerName": "Epitome Invocation"
     }
