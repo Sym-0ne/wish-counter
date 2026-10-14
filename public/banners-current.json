@@ -1,36 +1,36 @@
 {
-  "fetchedAt": "2026-10-13T10:21:52.808Z",
+  "fetchedAt": "2026-10-14T08:33:49.794Z",
   "source": "paimon.moe",
   "banners": {
     "character": {
-      "featured": "Vesna",
-      "featuredSlug": "vesna",
-      "featuredPortrait": "https://enka.network/ui/UI_AvatarIcon_Vesna.png",
-      "featured2": "Vodyanitsa",
-      "featured2Slug": "vodyanitsa",
-      "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Vodyanitsa.png",
-      "bannerName": "When Warm Winds Cavort",
-      "endDate": "2026-10-13",
-      "startDate": "2026-09-23",
+      "featured": "Skirk",
+      "featuredSlug": "skirk",
+      "featuredPortrait": null,
+      "featured2": "Escoffier",
+      "featured2Slug": "escoffier",
+      "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Escoffier.png",
+      "bannerName": "Void Star's Advent",
+      "endDate": "2026-11-03",
+      "startDate": "2026-10-13",
       "version": "7.1"
     },
     "weapon": {
-      "featured": "Beyond The Chrysalis",
-      "featuredSlug": "beyond_the_chrysalis",
-      "featuredPortrait": "https://enka.network/ui/UI_EquipIcon_Sword_Samosvist_Awaken.png",
-      "featured2": "Hymn Of The Maelstrom",
-      "featured2Slug": "hymn_of_the_maelstrom",
-      "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Catalyst_Bludnye_Awaken.png",
+      "featured": "Azurelight",
+      "featuredSlug": "azurelight",
+      "featuredPortrait": "https://enka.network/ui/UI_EquipIcon_Sword_OuterSword_Awaken.png",
+      "featured2": "Symphonist Of Scents",
+      "featured2Slug": "symphonist_of_scents",
+      "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Pole_Trident_Awaken.png",
       "featuredWeapons": [
-        "Beyond The Chrysalis",
-        "Hymn Of The Maelstrom"
+        "Azurelight",
+        "Symphonist Of Scents"
       ],
       "featuredWeaponSlugs": [
-        "beyond_the_chrysalis",
-        "hymn_of_the_maelstrom"
+        "azurelight",
+        "symphonist_of_scents"
       ],
-      "endDate": "2026-10-13",
-      "startDate": "2026-09-23",
+      "endDate": "2026-11-03",
+      "startDate": "2026-10-13",
       "version": "7.1"
     },
     "chronicled": null,
