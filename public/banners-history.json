@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-11-03T10:40:43.236Z",
+  "fetchedAt": "2026-11-05T10:39:06.403Z",
   "character": [
     {
       "startMs": 1601222400000,
@@ -1391,6 +1391,19 @@
       "version": "7.1",
       "bannerName": "Void Star's Advent",
       "phase": 2
+    },
+    {
+      "startMs": 1793743200000,
+      "endMs": 1795514399000,
+      "featured": "Mitya",
+      "featuredSlug": "mitya",
+      "featuredPortrait": "https://enka.network/ui/UI_AvatarIcon_Mitya.png",
+      "featured2": "Furina",
+      "featured2Slug": "furina",
+      "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Furina.png",
+      "version": "7.2",
+      "bannerName": "Myriad Patterns Unfold",
+      "phase": 1
     }
   ],
   "weapon": [
@@ -2664,6 +2677,18 @@
       "featured2Slug": "symphonist_of_scents",
       "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Pole_Trident_Awaken.png",
       "version": "7.1",
+      "bannerName": "Epitome Invocation"
+    },
+    {
+      "startMs": 1793743200000,
+      "endMs": 1795514399000,
+      "featured": "Starsealed Edict",
+      "featuredSlug": "starsealed_edict",
+      "featuredPortrait": null,
+      "featured2": "Splendor Of Tranquil Waters",
+      "featured2Slug": "splendor_of_tranquil_waters",
+      "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Sword_Regalis_Awaken.png",
+      "version": "7.2",
       "bannerName": "Epitome Invocation"
     }
   ],

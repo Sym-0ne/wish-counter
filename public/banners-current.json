@@ -1,37 +1,37 @@
 {
-  "fetchedAt": "2026-11-03T10:40:43.233Z",
+  "fetchedAt": "2026-11-05T10:39:06.400Z",
   "source": "paimon.moe",
   "banners": {
     "character": {
-      "featured": "Skirk",
-      "featuredSlug": "skirk",
-      "featuredPortrait": null,
-      "featured2": "Escoffier",
-      "featured2Slug": "escoffier",
-      "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Escoffier.png",
-      "bannerName": "Void Star's Advent",
-      "endDate": "2026-11-03",
-      "startDate": "2026-10-13",
-      "version": "7.1"
+      "featured": "Mitya",
+      "featuredSlug": "mitya",
+      "featuredPortrait": "https://enka.network/ui/UI_AvatarIcon_Mitya.png",
+      "featured2": "Furina",
+      "featured2Slug": "furina",
+      "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Furina.png",
+      "bannerName": "Myriad Patterns Unfold",
+      "endDate": "2026-11-24",
+      "startDate": "2026-11-04",
+      "version": "7.2"
     },
     "weapon": {
-      "featured": "Azurelight",
-      "featuredSlug": "azurelight",
-      "featuredPortrait": "https://enka.network/ui/UI_EquipIcon_Sword_OuterSword_Awaken.png",
-      "featured2": "Symphonist Of Scents",
-      "featured2Slug": "symphonist_of_scents",
-      "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Pole_Trident_Awaken.png",
+      "featured": "Starsealed Edict",
+      "featuredSlug": "starsealed_edict",
+      "featuredPortrait": null,
+      "featured2": "Splendor Of Tranquil Waters",
+      "featured2Slug": "splendor_of_tranquil_waters",
+      "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Sword_Regalis_Awaken.png",
       "featuredWeapons": [
-        "Azurelight",
-        "Symphonist Of Scents"
+        "Starsealed Edict",
+        "Splendor Of Tranquil Waters"
       ],
       "featuredWeaponSlugs": [
-        "azurelight",
-        "symphonist_of_scents"
+        "starsealed_edict",
+        "splendor_of_tranquil_waters"
       ],
-      "endDate": "2026-11-03",
-      "startDate": "2026-10-13",
-      "version": "7.1"
+      "endDate": "2026-11-24",
+      "startDate": "2026-11-04",
+      "version": "7.2"
     },
     "chronicled": null,
     "standard": null
