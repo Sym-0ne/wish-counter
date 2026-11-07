@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-11-06T10:39:21.127Z",
+  "fetchedAt": "2026-11-07T09:50:51.289Z",
   "source": "paimon.moe",
   "banners": {
     "character": {
@@ -17,7 +17,7 @@
     "weapon": {
       "featured": "Starsealed Edict",
       "featuredSlug": "starsealed_edict",
-      "featuredPortrait": "https://enka.network/ui/UI_EquipIcon_Catalyst_Chernaya_Awaken.png",
+      "featuredPortrait": null,
       "featured2": "Splendor Of Tranquil Waters",
       "featured2Slug": "splendor_of_tranquil_waters",
       "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Sword_Regalis_Awaken.png",
