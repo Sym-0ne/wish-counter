@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-11-23T12:06:19.777Z",
+  "fetchedAt": "2026-11-24T13:28:38.774Z",
   "character": [
     {
       "startMs": 1601222400000,
@@ -1404,6 +1404,19 @@
       "version": "7.2",
       "bannerName": "Myriad Patterns Unfold",
       "phase": 1
+    },
+    {
+      "startMs": 1795514400000,
+      "endMs": 1797317999000,
+      "featured": "Zibai",
+      "featuredSlug": "zibai",
+      "featuredPortrait": "https://enka.network/ui/UI_AvatarIcon_Zibai.png",
+      "featured2": "Linnea",
+      "featured2Slug": "linnea",
+      "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Linnea.png",
+      "version": "7.2",
+      "bannerName": "Harmonious Abundance",
+      "phase": 2
     }
   ],
   "weapon": [
@@ -2690,6 +2703,18 @@
       "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Sword_Regalis_Awaken.png",
       "version": "7.2",
       "bannerName": "Epitome Invocation"
+    },
+    {
+      "startMs": 1795514400000,
+      "endMs": 1797317999000,
+      "featured": "Lightbearing Moonshard",
+      "featuredSlug": "lightbearing_moonshard",
+      "featuredPortrait": "https://enka.network/ui/UI_EquipIcon_Sword_SilverwareSaw_Awaken.png",
+      "featured2": "Golden Frostbound Oath",
+      "featured2Slug": "golden_frostbound_oath",
+      "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Bow_Alkonost_Awaken.png",
+      "version": "7.2",
+      "bannerName": "Epitome Invocation"
     }
   ],
   "chronicled": [
@@ -2782,6 +2807,19 @@
       "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Wriothesley.png",
       "version": "6.7",
       "bannerName": "Heavenlit Prophecy",
+      "phase": 1
+    },
+    {
+      "startMs": 1795514400000,
+      "endMs": 1797317999000,
+      "featured": "Varesa",
+      "featuredSlug": "varesa",
+      "featuredPortrait": "https://enka.network/ui/UI_AvatarIcon_Varesa.png",
+      "featured2": "Chasca",
+      "featured2Slug": "chasca",
+      "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Chasca.png",
+      "version": "7.2",
+      "bannerName": "Names Forged Beneath Blazing Skies",
       "phase": 1
     }
   ]
