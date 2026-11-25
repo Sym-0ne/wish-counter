@@ -1,39 +1,47 @@
 {
-  "fetchedAt": "2026-11-24T13:28:38.772Z",
+  "fetchedAt": "2026-11-25T12:27:55.166Z",
   "source": "paimon.moe",
   "banners": {
     "character": {
-      "featured": "Mitya",
-      "featuredSlug": "mitya",
-      "featuredPortrait": "https://enka.network/ui/UI_AvatarIcon_Mitya.png",
-      "featured2": "Furina",
-      "featured2Slug": "furina",
-      "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Furina.png",
-      "bannerName": "Myriad Patterns Unfold",
-      "endDate": "2026-11-24",
-      "startDate": "2026-11-04",
+      "featured": "Zibai",
+      "featuredSlug": "zibai",
+      "featuredPortrait": "https://enka.network/ui/UI_AvatarIcon_Zibai.png",
+      "featured2": "Linnea",
+      "featured2Slug": "linnea",
+      "featured2Portrait": "https://enka.network/ui/UI_AvatarIcon_Linnea.png",
+      "bannerName": "Harmonious Abundance",
+      "endDate": "2026-12-15",
+      "startDate": "2026-11-24",
       "version": "7.2"
     },
     "weapon": {
-      "featured": "Starsealed Edict",
-      "featuredSlug": "starsealed_edict",
-      "featuredPortrait": "https://enka.network/ui/UI_EquipIcon_Catalyst_Chernaya_Awaken.png",
-      "featured2": "Splendor Of Tranquil Waters",
-      "featured2Slug": "splendor_of_tranquil_waters",
-      "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Sword_Regalis_Awaken.png",
+      "featured": "Lightbearing Moonshard",
+      "featuredSlug": "lightbearing_moonshard",
+      "featuredPortrait": "https://enka.network/ui/UI_EquipIcon_Sword_SilverwareSaw_Awaken.png",
+      "featured2": "Golden Frostbound Oath",
+      "featured2Slug": "golden_frostbound_oath",
+      "featured2Portrait": "https://enka.network/ui/UI_EquipIcon_Bow_Alkonost_Awaken.png",
       "featuredWeapons": [
-        "Starsealed Edict",
-        "Splendor Of Tranquil Waters"
+        "Lightbearing Moonshard",
+        "Golden Frostbound Oath"
       ],
       "featuredWeaponSlugs": [
-        "starsealed_edict",
-        "splendor_of_tranquil_waters"
+        "lightbearing_moonshard",
+        "golden_frostbound_oath"
       ],
-      "endDate": "2026-11-24",
-      "startDate": "2026-11-04",
+      "endDate": "2026-12-15",
+      "startDate": "2026-11-24",
       "version": "7.2"
     },
-    "chronicled": null,
+    "chronicled": {
+      "featured": "Varesa",
+      "featuredSlug": "varesa",
+      "featuredPortrait": "https://enka.network/ui/UI_AvatarIcon_Varesa.png",
+      "bannerName": "Names Forged Beneath Blazing Skies",
+      "endDate": "2026-12-15",
+      "startDate": "2026-11-24",
+      "version": "7.2"
+    },
     "standard": null
   },
   "upcoming": []
